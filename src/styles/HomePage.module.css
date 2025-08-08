@@ -1,0 +1,52 @@
+/* HomePage.module.css */
+
+.container {
+  min-height: 100vh;
+  background-color: #1B3C53;
+  position: relative; 
+  overflow: hidden;
+}
+
+.heading {
+  position: absolute;
+  top: 4rem;
+  left: 2.5rem;
+  max-width: 40rem;
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #f9f3ef;
+  line-height: 1.2;
+  text-align: justify; 
+}
+
+.logoWrapper {
+  position: absolute;
+  top: 1.5rem;
+  left: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0,25rem;
+}
+
+.logo {
+  height: 48px;
+  width: auto;
+}
+
+.textLogo {
+  height: 42px;
+  width: auto;
+}
+
+@media (min-width: 768px) {
+  .logo {
+    height: 60px;
+  }
+  .textLogo {
+    height: 87px;
+  }
+  .heading {
+    font-size: 3.75rem; /* md:text-6xl */
+  }
+}
+
