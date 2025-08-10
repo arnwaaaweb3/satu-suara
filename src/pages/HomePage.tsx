@@ -1,9 +1,12 @@
+// HomePage.tsx
 import React, { useState, useEffect, ClipboardEvent, MouseEvent } from 'react';
 import BlurText from '../components/BlurText';
 import FadeContent from '../components/FadeContent';
 import Waves from '../components/Waves';
+import HamburgerMenu from '../components/HamburgerMenu';
 import styles from '../styles/HomePage.module.css';
 import LoadingScreen from '../components/LoadingScreen'; // import loading screen
+import OrbitVerified from "../components/OrbitVerified";
 
 const HomePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +52,9 @@ const HomePage: React.FC = () => {
           }}
         >
           {/* Decorative Vectors */}
-          <img src="/vektor2.png" alt="Vector 2" className={styles.vector2} />
+          <div className={styles.vector2}>
+            <OrbitVerified />
+          </div>
           <img src="/vektor3.png" alt="Vector 3" className={styles.vector3} />
 
           {/* Waves Layer */}
@@ -78,6 +83,9 @@ const HomePage: React.FC = () => {
               <img src="/white-text.png" alt="SatuSuara" className={styles.textLogo} />
             </FadeContent>
           </div>
+
+          {/* Tambahkan komponen HamburgerMenu di sini */}
+          <HamburgerMenu />
 
           {/* Heading */}
           <div

@@ -1,0 +1,108 @@
+/* -- Hamburger Menu Styling -- */
+.menuContainer {
+  position: absolute;
+  top: 3rem; /* Sesuaikan dengan logoWrapper */
+  right: 4rem; /* Pojok kanan atas */
+  z-index: 10; /* Pastikan di atas semua elemen lain */
+}
+
+.hamburgerButton {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  border-radius: 12px; /* Ikuti border-radius tombol CTA */
+  border: none; /* Kita pakai gradient, jadi border-nya enggak perlu */
+
+  /* Warna dan efek 3D dari tombol CTA */
+  background: linear-gradient(145deg, #1e90ff, #0052cc);
+  box-shadow: 
+    0 4px 6px rgba(0, 0, 0, 0.3), /* Shadow bawah */
+    inset 0 2px 4px rgba(255, 255, 255, 0.2); /* Highlight dalam */
+
+  transition: all 0.3s ease;
+}
+
+.hamburgerButton:hover {
+  /* Efek hover seperti tombol CTA */
+  background: linear-gradient(145deg, #0052cc, #1e90ff);
+  box-shadow:
+    0 6px 10px rgba(0, 0, 0, 0.5),
+    inset 0 2px 8px rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.hamburgerButton:active {
+  /* Efek klik seperti tombol CTA */
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.7);
+  transform: translateY(1px);
+  background: linear-gradient(145deg, #0041a8, #00307a);
+}
+
+.line {
+  width: 28px;
+  height: 2px;
+  background: white;
+  border-radius: 2px;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Animasi untuk icon X tetap sama */
+.line1Open {
+  transform: translateY(8px) rotate(45deg);
+}
+.line2Open {
+  opacity: 0;
+}
+.line3Open {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 200px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border-radius: 12px;
+  
+  /* Background yang disesuaikan dengan warna tombol */
+  background: rgba(0, 50, 150, 0.7); /* Biru gelap semi-transparan */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+
+  transform-origin: top right;
+  animation: dropdownFadeIn 0.3s ease-out forwards;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-20px) rotateX(-30deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotateX(0);
+  }
+}
+
+.menuItem {
+  color: white;
+  padding: 10px 15px;
+  text-decoration: none;
+  font-size: 1rem;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.menuItem:hover {
+  background: rgba(255, 255, 255, 0.1);
+}

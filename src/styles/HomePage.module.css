@@ -34,6 +34,25 @@
   width: auto;
 }
 
+/* Vector Animations */
+@keyframes floatSlow {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg); 
+  }
+  50% { 
+    transform: translateY(-15px) rotate(2deg); 
+  }
+}
+
+@keyframes floatReverse {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg) scale(1); 
+  }
+  50% { 
+    transform: translateY(-10px) rotate(-1deg) scale(1.02); 
+  }
+}
+
 .vector2 {
   position: absolute;
   top: 5rem;
@@ -41,6 +60,8 @@
   width: 500px;
   height: auto;
   z-index: 3;
+  animation: floatSlow 4s ease-in-out infinite;
+  animation-delay: 0.5s;
 }
 .vector2 img {
   display: block;
@@ -55,6 +76,8 @@
   width: 800px;
   height: auto;
   z-index: 2; /* di atas background, di bawah logo */
+  animation: floatReverse 8s ease-in-out infinite;
+  animation-delay: 1s;
 }
 
 .heading {
@@ -74,7 +97,7 @@
     -moz-user-select: none;    
     -ms-user-select: none;  
     -o-user-select: none;  
-  cursor: pointer;}         
+    cursor: pointer;}         
 }
 
 .ctaButton {
