@@ -5,29 +5,35 @@ import Waves from "../components/Waves";
 import LoadingScreen from "../components/LoadingScreen";
 import styles from "../styles/CentralPage.module.css";
 import { FaHome, FaInfo, FaUser, FaQuestion, FaBook } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const actionButtonsData = [
-  { id: 1, icon: FaHome, label: "Home" },
-  { id: 2, icon: FaInfo, label: "Info" },
-  { id: 3, icon: FaUser, label: "User" },
-  { id: 4, icon: FaQuestion, label: "FAQ" },
-  { id: 5, icon: FaBook, label: "Library" },
+  { id: 1, icon: FaHome, label: "Beranda", path: "/" },
+  { id: 2, icon: FaInfo, label: "Info", path: "/info" },
+  { id: 3, icon: FaUser, label: "Kreator", path: "/creator" },
+  { id: 4, icon: FaQuestion, label: "FAQ", path: "/faq" },
+  { id: 5, icon: FaBook, label: "Kiat", path: "/kiat" },
 ];
 
 const CentralPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [buttonOpacity, setButtonOpacity] = useState(1);
+  const [blurStyles, setBlurStyles] = useState<React.CSSProperties[]>([]);
 
-  // Ref posisi target dan posisi render saat ini (untuk lerp smooth)
+  const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
+
   const offsetXTarget = useRef(0);
   const offsetXCurrent = useRef(0);
-
   const containerRef = useRef<HTMLDivElement>(null);
+  const buttonGroupRef = useRef<HTMLDivElement>(null);
   const buttonsWidth = useRef(0);
 
   const isDragging = useRef(false);
   const startX = useRef(0);
   const lastOffsetX = useRef(0);
+
+  // Inisialisasi useNavigate
+  const navigate = useNavigate();
 
   // Load assets + scroll fade opacity
   useEffect(() => {
@@ -71,11 +77,8 @@ const CentralPage: React.FC = () => {
     window.addEventListener("scroll", handleScroll);
 
     const calcButtonsWidth = () => {
-      if (containerRef.current) {
-        const container = containerRef.current.querySelector(`.${styles.buttonGroup}`);
-        if (container) {
-          buttonsWidth.current = container.scrollWidth / 2; // Bagi 2 karena duplikat 2x
-        }
+      if (buttonGroupRef.current) {
+        buttonsWidth.current = buttonGroupRef.current.scrollWidth / 2;
       }
     };
 
@@ -115,31 +118,74 @@ const CentralPage: React.FC = () => {
     let newOffset = lastOffsetX.current + deltaX;
 
     if (buttonsWidth.current > 0) {
-      if (newOffset > 0) {
-        newOffset -= buttonsWidth.current;
-      } else if (newOffset < -buttonsWidth.current) {
-        newOffset += buttonsWidth.current;
-      }
+      const maxOffset = buttonsWidth.current * 0.5;
+      const minOffset = -buttonsWidth.current * 1.5;
+      newOffset = Math.max(minOffset, Math.min(maxOffset, newOffset));
     }
-
     offsetXTarget.current = newOffset;
   };
+  
+  const onButtonMouseDown = (e: React.MouseEvent, label: string) => {
+    e.stopPropagation();
+    const buttonRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setTooltip({
+      label,
+      x: buttonRect.left + buttonRect.width / 2,
+      y: buttonRect.top,
+    });
+  };
 
-  // Animasi lerp supaya smooth (requestAnimationFrame)
+  const onButtonMouseUp = (path: string) => {
+    setTooltip(null);
+    if (!isDragging.current) {
+      navigate(path);
+    }
+  };
+
+  const onButtonMouseLeave = () => {
+    setTooltip(null);
+  };
+  
+  // Logic untuk menghitung blur dan opacity
+  const updateBlurStyles = () => {
+    if (buttonGroupRef.current && containerRef.current) {
+      const buttonElements = Array.from(
+        buttonGroupRef.current.querySelectorAll(`.${styles.actionButton}`)
+      ) as HTMLElement[];
+
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const centerOfContainer = containerRect.width / 2;
+      const blurStylesArray = buttonElements.map((button) => {
+        const buttonRect = button.getBoundingClientRect();
+        const buttonCenter = buttonRect.left + buttonRect.width / 2 - containerRect.left;
+        const distanceToCenter = Math.abs(buttonCenter - centerOfContainer);
+        const maxDistance = containerRect.width / 2;
+        const normalizedDistance = Math.min(distanceToCenter / (maxDistance), 1);
+        const blurValue = normalizedDistance * 5;
+
+        const opacityValue = 1 - normalizedDistance * 0.7;
+
+        return {
+          filter: `blur(${blurValue}px)`,
+          opacity: opacityValue,
+        };
+      });
+      setBlurStyles(blurStylesArray);
+    }
+  };
+
+  // Animasi lerp supaya smooth (requestAnimationFrame) + update blur
   useEffect(() => {
     let animationFrameId: number;
 
     const lerp = (start: number, end: number, t: number) => start + (end - start) * t;
 
     const animate = () => {
-      // Lerp posisi current menuju target offset
       offsetXCurrent.current = lerp(offsetXCurrent.current, offsetXTarget.current, 0.1);
 
-      if (containerRef.current) {
-        containerRef.current.querySelector(`.${styles.buttonGroup}`)?.setAttribute(
-          "style",
-          `transform: translateX(${offsetXCurrent.current}px)`
-        );
+      if (buttonGroupRef.current) {
+        buttonGroupRef.current.style.transform = `translateX(${offsetXCurrent.current}px)`;
+        updateBlurStyles();
       }
 
       animationFrameId = requestAnimationFrame(animate);
@@ -187,26 +233,30 @@ const CentralPage: React.FC = () => {
             <div
               className={styles.buttonContainerWrapper}
               ref={containerRef}
-              style={{ opacity: buttonOpacity, cursor: "grab" }}
+              style={{ opacity: buttonOpacity }}
               onMouseDown={onMouseDown}
               onMouseUp={onMouseUpOrLeave}
               onMouseLeave={onMouseUpOrLeave}
               onMouseMove={onMouseMove}
             >
-              <div className={styles.buttonGroup}>
-                {actionButtonsData.map((button) => {
+              <div className={styles.buttonGroup} ref={buttonGroupRef}>
+                {actionButtonsData.map((button, index) => {
                   const IconComponent = button.icon;
                   return (
                     <button
                       key={button.id}
                       className={styles.actionButton}
                       aria-label={button.label}
+                      style={blurStyles[index] || {}}
+                      onMouseDown={(e) => onButtonMouseDown(e, button.label)}
+                      onMouseUp={() => onButtonMouseUp(button.path)}
+                      onMouseLeave={onButtonMouseLeave}
                     >
                       <IconComponent size={24} />
                     </button>
                   );
                 })}
-                {actionButtonsData.map((button) => {
+                {actionButtonsData.map((button, index) => {
                   const IconComponent = button.icon;
                   return (
                     <button
@@ -214,6 +264,10 @@ const CentralPage: React.FC = () => {
                       className={styles.actionButton}
                       aria-hidden="true"
                       tabIndex={-1}
+                      style={blurStyles[index + actionButtonsData.length] || {}}
+                      onMouseDown={(e) => onButtonMouseDown(e, button.label)}
+                      onMouseUp={() => onButtonMouseUp(button.path)}
+                      onMouseLeave={onButtonMouseLeave}
                     >
                       <IconComponent size={24} />
                     </button>
@@ -222,6 +276,19 @@ const CentralPage: React.FC = () => {
               </div>
             </div>
           </div>
+          {tooltip && (
+            <div
+              className={styles.tooltipText}
+              style={{
+                left: tooltip.x,
+                top: tooltip.y,
+                transform: `translateX(-50%) translateY(-100%)`,
+              }}
+            >
+              {tooltip.label}
+              <div className={styles.tooltipArrow} />
+            </div>
+          )}
         </div>
       )}
     </>

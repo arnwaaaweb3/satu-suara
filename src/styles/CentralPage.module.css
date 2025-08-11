@@ -1,9 +1,15 @@
+/*
+ * ==============================
+ * === General Page Styling ===
+ * ==============================
+ */
 .container {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
 }
 
+/* Class untuk membungkus komponen Waves */
 .wavesWrapper {
   position: absolute;
   top: 0;
@@ -13,6 +19,11 @@
   z-index: 1;
 }
 
+/*
+ * ================================
+ * === Content Container Styling ===
+ * ================================
+ */
 .contentContainer {
   position: absolute;
   bottom: 6%;
@@ -35,7 +46,11 @@
   align-items: center;
 }
 
-/* Wrapper infinite scroll + shadow fade */
+/*
+ * ======================================
+ * === Infinite Scroll Carousel Styling ===
+ * ======================================
+ */
 .buttonContainerWrapper {
   overflow: hidden;
   width: 100%;
@@ -43,22 +58,6 @@
   user-select: none;
   padding: 12px 0;
   transition: opacity 0.5s ease;
-
-  /* Efek shadow/fade di kiri dan kanan */
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    black 10%,
-    black 90%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    black 10%,
-    black 90%,
-    transparent 100%
-  );
 }
 
 .buttonGroup {
@@ -68,15 +67,46 @@
   will-change: transform;
 }
 
+/* Tooltip Styling */
+.tooltipText {
+  position: fixed; /* Penting agar tidak terpengaruh overflow parent */
+  z-index: 999;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  pointer-events: none; /* Penting agar tidak mengganggu event mouse pada tombol */
+  white-space: nowrap;
+}
+
+/* Segitiga kecil di bawah tooltip */
+.tooltipArrow {
+  position: absolute;
+  bottom: -5px; /* Mengatur posisi agar berada di bawah tooltip */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(0, 0, 0, 0.8);
+}
+
+/*
+ * ======================================
+ * === Scrollable Button Styling (no scroll, just animation) ===
+ * ======================================
+ */
 .actionButton {
   width: 50px;
   height: 50px;
   flex-shrink: 0;
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   cursor: pointer;
   border-radius: 12px;
   border: none;
@@ -87,7 +117,6 @@
   box-shadow:
     0 4px 6px rgba(0, 0, 0, 0.3),
     inset 0 2px 4px rgba(255, 255, 255, 0.2);
-
   transition: all 0.3s ease;
 }
 
@@ -105,6 +134,11 @@
   background: linear-gradient(145deg, #0041a8, #00307a);
 }
 
+/*
+ * ======================
+ * === Media Queries ===
+ * ======================
+ */
 @media (max-width: 768px) {
   .contentContainer {
     width: 90%;
