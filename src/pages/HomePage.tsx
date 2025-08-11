@@ -5,7 +5,7 @@ import FadeContent from '../components/FadeContent';
 import Waves from '../components/Waves';
 import HamburgerMenu from '../components/HamburgerMenu';
 import styles from '../styles/HomePage.module.css';
-import LoadingScreen from '../components/LoadingScreen'; // import loading screen
+import LoadingScreen from '../components/LoadingScreen';
 import OrbitVerified from "../components/OrbitVerified";
 
 const HomePage: React.FC = () => {
@@ -28,7 +28,7 @@ const HomePage: React.FC = () => {
       img.onload = () => {
         loadedCount++;
         if (loadedCount === assets.length) {
-          setTimeout(() => setIsLoading(false), 500); // kasih delay biar smooth
+          setTimeout(() => setIsLoading(false), 500);
         }
       };
     });
@@ -84,7 +84,7 @@ const HomePage: React.FC = () => {
             </FadeContent>
           </div>
 
-          {/* Tambahkan komponen HamburgerMenu di sini */}
+          {/* Hamburger Menu */}
           <HamburgerMenu />
 
           {/* Heading */}
@@ -101,7 +101,11 @@ const HomePage: React.FC = () => {
               direction="top"
               onAnimationComplete={handleAnimationComplete}
             />
-            <button className={styles.ctaButton}>Get Started</button>
+
+            {/* CTA Button with Fade Animation */}
+            <FadeContent slideY={20}>
+              <button className={styles.ctaButton}>Get Started</button>
+            </FadeContent>
           </div>
         </div>
       )}

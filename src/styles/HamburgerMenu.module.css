@@ -15,20 +15,16 @@
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  border-radius: 12px; /* Ikuti border-radius tombol CTA */
-  border: none; /* Kita pakai gradient, jadi border-nya enggak perlu */
-
-  /* Warna dan efek 3D dari tombol CTA */
+  border-radius: 12px;
+  border: none;
   background: linear-gradient(145deg, #1e90ff, #0052cc);
   box-shadow: 
-    0 4px 6px rgba(0, 0, 0, 0.3), /* Shadow bawah */
-    inset 0 2px 4px rgba(255, 255, 255, 0.2); /* Highlight dalam */
-
+    0 4px 6px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
 }
 
 .hamburgerButton:hover {
-  /* Efek hover seperti tombol CTA */
   background: linear-gradient(145deg, #0052cc, #1e90ff);
   box-shadow:
     0 6px 10px rgba(0, 0, 0, 0.5),
@@ -37,7 +33,6 @@
 }
 
 .hamburgerButton:active {
-  /* Efek klik seperti tombol CTA */
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.7);
   transform: translateY(1px);
   background: linear-gradient(145deg, #0041a8, #00307a);
@@ -51,7 +46,6 @@
   transition: all 0.3s ease-in-out;
 }
 
-/* Animasi untuk icon X tetap sama */
 .line1Open {
   transform: translateY(8px) rotate(45deg);
 }
@@ -72,17 +66,16 @@
   flex-direction: column;
   gap: 5px;
   border-radius: 12px;
-  
-  /* Background yang disesuaikan dengan warna tombol */
-  background: rgba(0, 50, 150, 0.7); /* Biru gelap semi-transparan */
+  background: rgba(0, 50, 150, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-
   transform-origin: top right;
   animation: dropdownFadeIn 0.3s ease-out forwards;
+  z-index: 11; /* Pastikan di atas overlay */
 }
 
+/* Animasi untuk menu dropdown saat muncul */
 @keyframes dropdownFadeIn {
   from {
     opacity: 0;
@@ -105,4 +98,43 @@
 
 .menuItem:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+/* Overlay Blur Background */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(5px);
+  z-index: 9;
+  opacity: 0;
+  animation: fadeInOverlay 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Animasi untuk overlay saat muncul */
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(5px);
+  }
+}
+
+/* Animasi untuk overlay saat hilang */
+.fadeOutOverlay {
+  animation: fadeOutOverlay 0.3s ease-out forwards;
+}
+
+@keyframes fadeOutOverlay {
+  from {
+    opacity: 1;
+    backdrop-filter: blur(5px);
+  }
+  to {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
 }
