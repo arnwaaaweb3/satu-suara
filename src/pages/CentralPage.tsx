@@ -1,6 +1,8 @@
+// CentralPage.tsx
+
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Waves from "../components/Waves";
 import LoadingScreen from "../components/LoadingScreen";
 import styles from "../styles/CentralPage.module.css";
@@ -18,24 +20,96 @@ const actionButtonsData = [
 const CentralPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [buttonOpacity, setButtonOpacity] = useState(1);
-  const [blurStyles, setBlurStyles] = useState<React.CSSProperties[]>([]);
-
   const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
+  const [activeContent, setActiveContent] = useState<string>("");
+
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const buttonGroupRef = useRef<HTMLDivElement | null>(null);
 
   const offsetXTarget = useRef(0);
   const offsetXCurrent = useRef(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const buttonGroupRef = useRef<HTMLDivElement>(null);
+
   const buttonsWidth = useRef(0);
+  const buttonItemWidth = useRef(0);
 
   const isDragging = useRef(false);
   const startX = useRef(0);
   const lastOffsetX = useRef(0);
+  const isClickingNav = useRef(false);
 
-  // Inisialisasi useNavigate
+  // inertia
+  const velocity = useRef(0);
+  const lastMoveX = useRef(0);
+
+  const lastBlurUpdateOffset = useRef<number | null>(null);
+  const blurStyles = useRef<React.CSSProperties[]>([]);
+  const [, forceRerender] = useState(0);
+
   const navigate = useNavigate();
 
-  // Load assets + scroll fade opacity
+  const snapToNearest = useCallback(() => {
+    if (buttonItemWidth.current <= 0 || !containerRef.current) return;
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const containerCenter = containerRect.width / 2;
+
+    let closestIndex = 0;
+    let closestDistance = Infinity;
+
+    const allButtons = buttonGroupRef.current?.querySelectorAll(`.${styles.actionButton}`);
+    if (!allButtons) return;
+
+    allButtons.forEach((btn, idx) => {
+      const rect = (btn as HTMLElement).getBoundingClientRect();
+      const btnCenter = rect.left + rect.width / 2 - containerRect.left;
+      const dist = Math.abs(containerCenter - btnCenter);
+      if (dist < closestDistance) {
+        closestDistance = dist;
+        closestIndex = idx;
+      }
+    });
+
+    const targetOffset = containerCenter - ((allButtons[closestIndex] as HTMLElement).offsetLeft + buttonItemWidth.current / 2);
+    offsetXTarget.current = targetOffset;
+  }, []);
+
+  const inertiaScroll = useCallback(() => {
+    if (Math.abs(velocity.current) > 0.1) {
+      offsetXTarget.current += velocity.current;
+      velocity.current *= 0.95; // friction
+      requestAnimationFrame(inertiaScroll);
+    } else {
+      snapToNearest();
+    }
+  }, [snapToNearest]);
+
+  const computeBlurStyles = useCallback(() => {
+    if (!buttonGroupRef.current || !containerRef.current) return;
+
+    const buttonElements = Array.from(buttonGroupRef.current.querySelectorAll(`.${styles.actionButton}`)) as HTMLElement[];
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const centerOfContainer = containerRect.width / 2;
+    const maxDistance = containerRect.width / 2;
+
+    const newBlur: React.CSSProperties[] = buttonElements.map((button) => {
+      const buttonRect = button.getBoundingClientRect();
+      const buttonCenter = buttonRect.left + buttonRect.width / 2 - containerRect.left;
+      const distanceToCenter = Math.abs(buttonCenter - centerOfContainer);
+      const normalizedDistance = Math.min(distanceToCenter / maxDistance, 1);
+
+      const blurValue = Math.pow(normalizedDistance, 1.9) * 4;
+      const opacityValue = 1 - Math.pow(normalizedDistance, 2) * 0.9;
+
+      return {
+        filter: `blur(${blurValue}px)`,
+        opacity: opacityValue,
+        transition: "filter 220ms linear, opacity 220ms linear",
+      };
+    });
+
+    blurStyles.current = newBlur;
+    forceRerender((v) => v + 1);
+  }, []);
+
   useEffect(() => {
     const assets = [
       "/background.png",
@@ -48,7 +122,7 @@ const CentralPage: React.FC = () => {
     const checkLoadingStatus = () => {
       loadedCount++;
       if (loadedCount === assets.length) {
-        setTimeout(() => setIsLoading(false), 500);
+        setTimeout(() => setIsLoading(false), 300);
       }
     };
 
@@ -59,7 +133,7 @@ const CentralPage: React.FC = () => {
       img.onerror = checkLoadingStatus;
     });
 
-    const fallback = setTimeout(() => setIsLoading(false), 5000);
+    const fallback = setTimeout(() => setIsLoading(false), 4000);
 
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
@@ -79,6 +153,10 @@ const CentralPage: React.FC = () => {
     const calcButtonsWidth = () => {
       if (buttonGroupRef.current) {
         buttonsWidth.current = buttonGroupRef.current.scrollWidth / 2;
+        const firstButton = buttonGroupRef.current.querySelector(`.${styles.actionButton}`);
+        if (firstButton instanceof HTMLElement) {
+          buttonItemWidth.current = firstButton.offsetWidth;
+        }
       }
     };
 
@@ -92,100 +170,144 @@ const CentralPage: React.FC = () => {
     };
   }, []);
 
-  // Drag handlers
-  const onMouseDown = (e: React.MouseEvent) => {
-    isDragging.current = true;
-    startX.current = e.pageX;
-    lastOffsetX.current = offsetXTarget.current;
-    if (containerRef.current) {
-      containerRef.current.style.cursor = "grabbing";
-      containerRef.current.style.userSelect = "none";
-    }
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onPointerDown = (e: PointerEvent) => {
+      isDragging.current = true;
+      startX.current = e.pageX;
+      lastOffsetX.current = offsetXTarget.current;
+      lastMoveX.current = e.pageX;
+      velocity.current = 0;
+      (container as HTMLElement).setPointerCapture(e.pointerId);
+      container.style.cursor = "grabbing";
+      container.style.userSelect = "none";
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDragging.current) return;
+      const deltaX = e.pageX - startX.current;
+      let newOffset = lastOffsetX.current + deltaX;
+      velocity.current = e.pageX - lastMoveX.current;
+      lastMoveX.current = e.pageX;
+
+      if (buttonsWidth.current > 0) {
+        const maxOffset = buttonsWidth.current * 0.5;
+        const minOffset = -buttonsWidth.current * 1.5;
+        newOffset = Math.max(minOffset, Math.min(maxOffset, newOffset));
+      }
+      offsetXTarget.current = newOffset;
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      isDragging.current = false;
+      try { (container as HTMLElement).releasePointerCapture(e.pointerId); } catch (err) {}
+      container.style.cursor = "grab";
+      container.style.userSelect = "auto";
+      // inertia
+      requestAnimationFrame(inertiaScroll);
+      setTimeout(() => (isClickingNav.current = false), 50);
+    };
+
+    container.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+
+    return () => {
+      container.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+    };
+  }, [inertiaScroll]);
+
+  const handleNext = () => {
+    if (buttonItemWidth.current <= 0 || !containerRef.current) return;
+    isClickingNav.current = true;
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const containerCenter = containerRect.width / 2;
+    const allButtons = buttonGroupRef.current?.querySelectorAll(`.${styles.actionButton}`);
+    if (!allButtons) return;
+
+    let closestIndex = 0;
+    let closestDistance = Infinity;
+
+    allButtons.forEach((btn, idx) => {
+      const rect = (btn as HTMLElement).getBoundingClientRect();
+      const btnCenter = rect.left + rect.width / 2 - containerRect.left;
+      const dist = Math.abs(containerCenter - btnCenter);
+      if (dist < closestDistance) {
+        closestDistance = dist;
+        closestIndex = idx;
+      }
+    });
+
+    const nextIndex = (closestIndex + 1) % allButtons.length;
+    const targetOffset = containerCenter - ((allButtons[nextIndex] as HTMLElement).offsetLeft + buttonItemWidth.current / 2);
+    offsetXTarget.current = targetOffset;
   };
 
-  const onMouseUpOrLeave = () => {
-    isDragging.current = false;
-    if (containerRef.current) {
-      containerRef.current.style.cursor = "grab";
-      containerRef.current.style.userSelect = "auto";
-    }
+  const handlePrev = () => {
+    if (buttonItemWidth.current <= 0 || !containerRef.current) return;
+    isClickingNav.current = true;
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const containerCenter = containerRect.width / 2;
+    const allButtons = buttonGroupRef.current?.querySelectorAll(`.${styles.actionButton}`);
+    if (!allButtons) return;
+
+    let closestIndex = 0;
+    let closestDistance = Infinity;
+
+    allButtons.forEach((btn, idx) => {
+      const rect = (btn as HTMLElement).getBoundingClientRect();
+      const btnCenter = rect.left + rect.width / 2 - containerRect.left;
+      const dist = Math.abs(containerCenter - btnCenter);
+      if (dist < closestDistance) {
+        closestDistance = dist;
+        closestIndex = idx;
+      }
+    });
+
+    const prevIndex = (closestIndex - 1 + allButtons.length) % allButtons.length;
+    const targetOffset = containerCenter - ((allButtons[prevIndex] as HTMLElement).offsetLeft + buttonItemWidth.current / 2);
+    offsetXTarget.current = targetOffset;
   };
 
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current) return;
-
-    const deltaX = e.pageX - startX.current;
-    let newOffset = lastOffsetX.current + deltaX;
-
-    if (buttonsWidth.current > 0) {
-      const maxOffset = buttonsWidth.current * 0.5;
-      const minOffset = -buttonsWidth.current * 1.5;
-      newOffset = Math.max(minOffset, Math.min(maxOffset, newOffset));
-    }
-    offsetXTarget.current = newOffset;
-  };
-  
-  const onButtonMouseDown = (e: React.MouseEvent, label: string) => {
+  const onButtonPointerDown = (e: React.PointerEvent, label: string) => {
     e.stopPropagation();
     const buttonRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    setTooltip({
-      label,
-      x: buttonRect.left + buttonRect.width / 2,
-      y: buttonRect.top,
-    });
+    setTooltip({ label, x: buttonRect.left + buttonRect.width / 2, y: buttonRect.top });
   };
 
-  const onButtonMouseUp = (path: string) => {
+  const onButtonPointerUp = (path: string, label: string) => {
     setTooltip(null);
-    if (!isDragging.current) {
-      navigate(path);
+    if (!isDragging.current && !isClickingNav.current) {
+      if (path === "/") navigate(path);
+      else setActiveContent(`Ini konten untuk tombol ${label}.`);
     }
   };
 
-  const onButtonMouseLeave = () => {
+  const onButtonPointerLeave = () => {
     setTooltip(null);
   };
-  
-  // Logic untuk menghitung blur dan opacity
-  const updateBlurStyles = () => {
-    if (buttonGroupRef.current && containerRef.current) {
-      const buttonElements = Array.from(
-        buttonGroupRef.current.querySelectorAll(`.${styles.actionButton}`)
-      ) as HTMLElement[];
 
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const centerOfContainer = containerRect.width / 2;
-      const blurStylesArray = buttonElements.map((button) => {
-        const buttonRect = button.getBoundingClientRect();
-        const buttonCenter = buttonRect.left + buttonRect.width / 2 - containerRect.left;
-        const distanceToCenter = Math.abs(buttonCenter - centerOfContainer);
-        const maxDistance = containerRect.width / 2;
-        const normalizedDistance = Math.min(distanceToCenter / (maxDistance), 1);
-        const blurValue = normalizedDistance * 5;
-
-        const opacityValue = 1 - normalizedDistance * 0.7;
-
-        return {
-          filter: `blur(${blurValue}px)`,
-          opacity: opacityValue,
-        };
-      });
-      setBlurStyles(blurStylesArray);
-    }
-  };
-
-  // Animasi lerp supaya smooth (requestAnimationFrame) + update blur
   useEffect(() => {
     let animationFrameId: number;
 
     const lerp = (start: number, end: number, t: number) => start + (end - start) * t;
 
     const animate = () => {
-      offsetXCurrent.current = lerp(offsetXCurrent.current, offsetXTarget.current, 0.1);
+      offsetXCurrent.current = lerp(offsetXCurrent.current, offsetXTarget.current, 0.12);
 
       if (buttonGroupRef.current) {
         buttonGroupRef.current.style.transform = `translateX(${offsetXCurrent.current}px)`;
-        updateBlurStyles();
+
+        if (lastBlurUpdateOffset.current === null || Math.abs((lastBlurUpdateOffset.current ?? 0) - offsetXCurrent.current) > 0.6) {
+          computeBlurStyles();
+          lastBlurUpdateOffset.current = offsetXCurrent.current;
+        }
       }
 
       animationFrameId = requestAnimationFrame(animate);
@@ -194,7 +316,9 @@ const CentralPage: React.FC = () => {
     animate();
 
     return () => cancelAnimationFrame(animationFrameId);
-  }, []);
+  }, [computeBlurStyles]);
+  
+  const getBlurStyleForIndex = (idx: number) => blurStyles.current[idx] || {};
 
   return (
     <>
@@ -229,45 +353,41 @@ const CentralPage: React.FC = () => {
             />
           </div>
 
+          <div className={styles.contentBox}>
+            {activeContent ? (
+              <div className={styles.contentInside}>
+                <h2>{activeContent}</h2>
+                <p>Ini adalah area untuk menampilkan detail konten dari tombol yang dipilih.</p>
+              </div>
+            ) : (
+              <div className={styles.contentInside}>
+                <h2>Selamat datang di Coinspace</h2>
+                <p>Swipe, drag, atau klik tombol di bawah untuk eksplorasi.</p>
+              </div>
+            )}
+          </div>
+
           <div className={styles.contentContainer}>
+            <button className={`${styles.navButton} ${styles.navLeft}`} onClick={handlePrev} aria-label="Previous">
+            </button>
+
             <div
               className={styles.buttonContainerWrapper}
               ref={containerRef}
               style={{ opacity: buttonOpacity }}
-              onMouseDown={onMouseDown}
-              onMouseUp={onMouseUpOrLeave}
-              onMouseLeave={onMouseUpOrLeave}
-              onMouseMove={onMouseMove}
             >
               <div className={styles.buttonGroup} ref={buttonGroupRef}>
-                {actionButtonsData.map((button, index) => {
+                {actionButtonsData.concat(actionButtonsData).map((button, index) => {
                   const IconComponent = button.icon;
                   return (
                     <button
-                      key={button.id}
+                      key={`${button.id}_${index}`}
                       className={styles.actionButton}
                       aria-label={button.label}
-                      style={blurStyles[index] || {}}
-                      onMouseDown={(e) => onButtonMouseDown(e, button.label)}
-                      onMouseUp={() => onButtonMouseUp(button.path)}
-                      onMouseLeave={onButtonMouseLeave}
-                    >
-                      <IconComponent size={24} />
-                    </button>
-                  );
-                })}
-                {actionButtonsData.map((button, index) => {
-                  const IconComponent = button.icon;
-                  return (
-                    <button
-                      key={button.id + "_dup"}
-                      className={styles.actionButton}
-                      aria-hidden="true"
-                      tabIndex={-1}
-                      style={blurStyles[index + actionButtonsData.length] || {}}
-                      onMouseDown={(e) => onButtonMouseDown(e, button.label)}
-                      onMouseUp={() => onButtonMouseUp(button.path)}
-                      onMouseLeave={onButtonMouseLeave}
+                      style={getBlurStyleForIndex(index)}
+                      onPointerDown={(e) => onButtonPointerDown(e, button.label)}
+                      onPointerUp={() => onButtonPointerUp(button.path, button.label)}
+                      onPointerLeave={onButtonPointerLeave}
                     >
                       <IconComponent size={24} />
                     </button>
@@ -275,17 +395,21 @@ const CentralPage: React.FC = () => {
                 })}
               </div>
             </div>
+
+            <button className={`${styles.navButton} ${styles.navRight}`} onClick={handleNext} aria-label="Next">
+            </button>
           </div>
+
           {tooltip && (
             <div
               className={styles.tooltipText}
               style={{
                 left: tooltip.x,
                 top: tooltip.y,
-                transform: `translateX(-50%) translateY(-100%)`,
+                transform: `translateX(-50%) translateY(-110%)`,
               }}
             >
-              {tooltip.label}
+              <span className={styles.tooltipInner}>{tooltip.label}</span>
               <div className={styles.tooltipArrow} />
             </div>
           )}
