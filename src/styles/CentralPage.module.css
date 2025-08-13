@@ -1,7 +1,7 @@
 /*
-  -----------------------------
-  CentralPage.module.css
-  -----------------------------
+  -----------------------------
+  CentralPage.module.css
+  -----------------------------
 */
 
 /* General */
@@ -20,14 +20,43 @@
   z-index: 1;
 }
 
+/* New Panels */
+.leftPanel {
+  position: absolute;
+  top: 13%;
+  width: 17.5rem; /* Lebar panel */
+  height: 31.5rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+.rightPanel {
+  position: absolute;
+  top: 13%;
+  width: 17.5rem; /* Lebar panel */
+  height: 31.5rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+
+.leftPanel { right: 4% ; }
+.rightPanel { left: 4%; }
+
 /* Content Box */
 .contentBox {
   position: absolute;
   top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: 800px;
+  width: 100%;
+  max-width: 585px;
   min-height: 320px;
   background-color: rgba(255, 255, 255, 0.08);
   border-radius: 20px;
@@ -42,7 +71,20 @@
 
 .contentInside {
   color: white;
-  text-align: center;
+  align-items: left;
+}
+
+/* Welcome text & Link */
+.welcomeText {
+  color: white;
+  font-size: 1rem;
+}
+
+.tncLink {
+  color: #add8e6; /* Warna biru muda */
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
 }
 
 /* Content container (bottom control) */
@@ -61,15 +103,14 @@
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.12);
   z-index: 5;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: space-between;
 }
 
 /* Carousel */
 .buttonContainerWrapper {
   overflow: hidden;
-  width: 100%;
+  flex: 1;
   cursor: grab;
   user-select: none;
   padding: 12px 0;
@@ -109,7 +150,6 @@
 }
 
 .tooltipText[style] {
-  /* when present we animate it visible via inline style toggling */
   opacity: 1;
 }
 
@@ -127,11 +167,9 @@
 
 /* Nav buttons */
 .navButton {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
   color: white;
   cursor: pointer;
   z-index: 10;
@@ -139,15 +177,22 @@
   transition: opacity 0.18s ease, transform 0.12s ease;
   width: 36px;
   height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .navButton:hover {
   opacity: 1;
-  transform: translateY(-50%) scale(1.03);
+  transform: scale(1.05);
 }
 
-.navLeft { left: 6%; }
-.navRight { right: 6%; }
+.navLeft { 
+  margin-right: 12px;
+}
+.navRight { 
+  margin-left: 12px;
+}
 
 /* Action buttons */
 .actionButton {
@@ -170,6 +215,21 @@
 .actionButton:active {
   transform: translateY(2px) scale(0.995);
   box-shadow: inset 0 4px 10px rgba(0,0,0,0.45);
+}
+
+.logo, .whiteText {
+  animation: fadeInOut 2.5s ease-in-out infinite;
+}
+
+.logo {
+  width: 60px;
+  height: 60px;
+  ;
+}
+
+.whiteText {
+  width: 350px;
+  height: 130px;
 }
 
 /* Media queries */

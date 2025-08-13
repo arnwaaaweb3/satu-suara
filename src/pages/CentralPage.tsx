@@ -6,8 +6,8 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import Waves from "../components/Waves";
 import LoadingScreen from "../components/LoadingScreen";
 import styles from "../styles/CentralPage.module.css";
-import { FaHome, FaInfo, FaUser, FaQuestion, FaBook } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { FaHome, FaInfo, FaUser, FaQuestion, FaBook, FaChevronLeft, FaChevronRight, FaPoll } from "react-icons/fa";
+import { useNavigate, Link } from "react-router-dom";
 
 const actionButtonsData = [
   { id: 1, icon: FaHome, label: "Beranda", path: "/" },
@@ -15,6 +15,7 @@ const actionButtonsData = [
   { id: 3, icon: FaUser, label: "Kreator", path: "/creator" },
   { id: 4, icon: FaQuestion, label: "FAQ", path: "/faq" },
   { id: 5, icon: FaBook, label: "Kiat", path: "/kiat" },
+  { id: 6, icon: FaPoll, label: "Voting", path: "/voting" },
 ];
 
 const CentralPage: React.FC = () => {
@@ -31,6 +32,8 @@ const CentralPage: React.FC = () => {
 
   const buttonsWidth = useRef(0);
   const buttonItemWidth = useRef(0);
+  const gapWidth = 12;
+  const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const isDragging = useRef(false);
   const startX = useRef(0);
@@ -48,8 +51,8 @@ const CentralPage: React.FC = () => {
   const navigate = useNavigate();
 
   const snapToNearest = useCallback(() => {
-    if (buttonItemWidth.current <= 0 || !containerRef.current) return;
-    const containerRect = containerRef.current.getBoundingClientRect();
+    if (buttonItemWidth.current <= 0 || !buttonGroupRef.current) return;
+    const containerRect = containerRef.current!.getBoundingClientRect();
     const containerCenter = containerRect.width / 2;
 
     let closestIndex = 0;
@@ -152,10 +155,10 @@ const CentralPage: React.FC = () => {
 
     const calcButtonsWidth = () => {
       if (buttonGroupRef.current) {
-        buttonsWidth.current = buttonGroupRef.current.scrollWidth / 2;
-        const firstButton = buttonGroupRef.current.querySelector(`.${styles.actionButton}`);
-        if (firstButton instanceof HTMLElement) {
-          buttonItemWidth.current = firstButton.offsetWidth;
+        const allButtons = buttonGroupRef.current.querySelectorAll(`.${styles.actionButton}`);
+        if (allButtons.length > 0) {
+          buttonItemWidth.current = (allButtons[0] as HTMLElement).offsetWidth;
+          buttonsWidth.current = allButtons.length * buttonItemWidth.current + (allButtons.length - 1) * gapWidth;
         }
       }
     };
@@ -193,8 +196,8 @@ const CentralPage: React.FC = () => {
       lastMoveX.current = e.pageX;
 
       if (buttonsWidth.current > 0) {
-        const maxOffset = buttonsWidth.current * 0.5;
-        const minOffset = -buttonsWidth.current * 1.5;
+        const maxOffset = 0;
+        const minOffset = -(buttonsWidth.current - container.offsetWidth);
         newOffset = Math.max(minOffset, Math.min(maxOffset, newOffset));
       }
       offsetXTarget.current = newOffset;
@@ -223,56 +226,28 @@ const CentralPage: React.FC = () => {
     };
   }, [inertiaScroll]);
 
-  const handleNext = () => {
-    if (buttonItemWidth.current <= 0 || !containerRef.current) return;
+  const onHoldStart = (direction: 'prev' | 'next') => {
+    if (scrollIntervalRef.current) return;
     isClickingNav.current = true;
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const containerCenter = containerRect.width / 2;
-    const allButtons = buttonGroupRef.current?.querySelectorAll(`.${styles.actionButton}`);
-    if (!allButtons) return;
 
-    let closestIndex = 0;
-    let closestDistance = Infinity;
-
-    allButtons.forEach((btn, idx) => {
-      const rect = (btn as HTMLElement).getBoundingClientRect();
-      const btnCenter = rect.left + rect.width / 2 - containerRect.left;
-      const dist = Math.abs(containerCenter - btnCenter);
-      if (dist < closestDistance) {
-        closestDistance = dist;
-        closestIndex = idx;
-      }
-    });
-
-    const nextIndex = (closestIndex + 1) % allButtons.length;
-    const targetOffset = containerCenter - ((allButtons[nextIndex] as HTMLElement).offsetLeft + buttonItemWidth.current / 2);
-    offsetXTarget.current = targetOffset;
+    const scrollStep = direction === 'prev' ? 10 : -10; // Kecepatan geser
+    scrollIntervalRef.current = setInterval(() => {
+      offsetXTarget.current += scrollStep;
+    }, 20); // Interval per 20ms
   };
 
-  const handlePrev = () => {
-    if (buttonItemWidth.current <= 0 || !containerRef.current) return;
+  const onHoldEnd = () => {
+    if (scrollIntervalRef.current) {
+      clearInterval(scrollIntervalRef.current);
+      scrollIntervalRef.current = null;
+      snapToNearest();
+    }
+  };
+
+  const onClickNav = (direction: 'prev' | 'next') => {
     isClickingNav.current = true;
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const containerCenter = containerRect.width / 2;
-    const allButtons = buttonGroupRef.current?.querySelectorAll(`.${styles.actionButton}`);
-    if (!allButtons) return;
-
-    let closestIndex = 0;
-    let closestDistance = Infinity;
-
-    allButtons.forEach((btn, idx) => {
-      const rect = (btn as HTMLElement).getBoundingClientRect();
-      const btnCenter = rect.left + rect.width / 2 - containerRect.left;
-      const dist = Math.abs(containerCenter - btnCenter);
-      if (dist < closestDistance) {
-        closestDistance = dist;
-        closestIndex = idx;
-      }
-    });
-
-    const prevIndex = (closestIndex - 1 + allButtons.length) % allButtons.length;
-    const targetOffset = containerCenter - ((allButtons[prevIndex] as HTMLElement).offsetLeft + buttonItemWidth.current / 2);
-    offsetXTarget.current = targetOffset;
+    const scrollStep = direction === 'prev' ? (buttonItemWidth.current + gapWidth) : -(buttonItemWidth.current + gapWidth);
+    offsetXTarget.current += scrollStep;
   };
 
   const onButtonPointerDown = (e: React.PointerEvent, label: string) => {
@@ -312,7 +287,7 @@ const CentralPage: React.FC = () => {
 
       animationFrameId = requestAnimationFrame(animate);
     };
-
+    
     animate();
 
     return () => cancelAnimationFrame(animationFrameId);
@@ -353,31 +328,46 @@ const CentralPage: React.FC = () => {
             />
           </div>
 
+          <div className={styles.leftPanel}></div>
+          <div className={styles.rightPanel}></div>
+
           <div className={styles.contentBox}>
             {activeContent ? (
               <div className={styles.contentInside}>
                 <h2>{activeContent}</h2>
-                <p>Ini adalah area untuk menampilkan detail konten dari tombol yang dipilih.</p>
               </div>
             ) : (
+              
               <div className={styles.contentInside}>
-                <h2>Selamat datang di Coinspace</h2>
-                <p>Swipe, drag, atau klik tombol di bawah untuk eksplorasi.</p>
+                <img src="/blue-logo.ico" alt= "SatuSuara-Logo" className={styles.logo} />
+                <img src="/white-text.png" alt= "SatuSuara-Text" className={styles.whiteText} />
+                <h2>Selamat datang di SatuSuara</h2>
+                <p className={styles.welcomeText}>
+                  Sebelum mulai, mari membaca Syarat & Ketentuan 
+                  Penggunaan Layanan <Link to="/syarat-dan-ketentuan-penggunaan-layanan" className={styles.tncLink} >di sini.</Link>
+                </p>
               </div>
             )}
           </div>
 
           <div className={styles.contentContainer}>
-            <button className={`${styles.navButton} ${styles.navLeft}`} onClick={handlePrev} aria-label="Previous">
+            <button
+              className={`${styles.navButton} ${styles.navLeft}`}
+              onClick={() => onClickNav('prev')}
+              onPointerDown={() => onHoldStart('prev')}
+              onPointerUp={onHoldEnd}
+              onPointerLeave={onHoldEnd}
+              aria-label="Previous"
+            >
+              <FaChevronLeft size={24} />
             </button>
-
             <div
               className={styles.buttonContainerWrapper}
               ref={containerRef}
               style={{ opacity: buttonOpacity }}
             >
               <div className={styles.buttonGroup} ref={buttonGroupRef}>
-                {actionButtonsData.concat(actionButtonsData).map((button, index) => {
+                {actionButtonsData.map((button, index) => {
                   const IconComponent = button.icon;
                   return (
                     <button
@@ -395,8 +385,15 @@ const CentralPage: React.FC = () => {
                 })}
               </div>
             </div>
-
-            <button className={`${styles.navButton} ${styles.navRight}`} onClick={handleNext} aria-label="Next">
+            <button
+              className={`${styles.navButton} ${styles.navRight}`}
+              onClick={() => onClickNav('next')}
+              onPointerDown={() => onHoldStart('next')}
+              onPointerUp={onHoldEnd}
+              onPointerLeave={onHoldEnd}
+              aria-label="Next"
+            >
+              <FaChevronRight size={24} />
             </button>
           </div>
 

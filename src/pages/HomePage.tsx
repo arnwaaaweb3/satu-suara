@@ -1,5 +1,6 @@
-// HomePage.tsx
+// src/pages/HomePage.tsx
 import React, { useState, useEffect, ClipboardEvent, MouseEvent } from 'react';
+import { useNavigate } from 'react-router-dom'; // 👈 Import useNavigate
 import BlurText from '../components/BlurText';
 import FadeContent from '../components/FadeContent';
 import Waves from '../components/Waves';
@@ -10,6 +11,7 @@ import OrbitVerified from "../components/OrbitVerified";
 
 const HomePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate(); // 👈 Inisialisasi hook useNavigate
 
   useEffect(() => {
     const assets = [
@@ -36,6 +38,11 @@ const HomePage: React.FC = () => {
 
   const handleAnimationComplete = () => {
     console.log('Landing text animation completed!');
+  };
+
+  // 👈 Fungsi baru untuk menangani klik tombol
+  const handleGetStartedClick = () => {
+    navigate('/central');
   };
 
   return (
@@ -104,7 +111,10 @@ const HomePage: React.FC = () => {
 
             {/* CTA Button with Fade Animation */}
             <FadeContent slideY={20}>
-              <button className={styles.ctaButton}>Get Started</button>
+              {/* 👈 Panggil fungsi handleGetStartedClick saat tombol diklik */}
+              <button className={styles.ctaButton} onClick={handleGetStartedClick}>
+                Get Started
+              </button>
             </FadeContent>
           </div>
         </div>
