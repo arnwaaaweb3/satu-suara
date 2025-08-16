@@ -1,7 +1,7 @@
 /*
-  -----------------------------
-  CentralPage.module.css
-  -----------------------------
+  -----------------------------
+  CentralPage.module.css
+  -----------------------------
 */
 
 /* General */
@@ -20,59 +20,71 @@
   z-index: 1;
 }
 
-/* New Panels */
-.leftPanel {
-  position: absolute;
-  top: 13%;
-  width: 17.5rem; /* Lebar panel */
-  height: 31.5rem;
-  background-color: rgba(255, 255, 255, 0.04);
-  border-radius: 20px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  z-index: 2;
-}
-
-.rightPanel {
-  position: absolute;
-  top: 13%;
-  width: 17.5rem; /* Lebar panel */
-  height: 31.5rem;
-  background-color: rgba(255, 255, 255, 0.04);
-  border-radius: 20px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  z-index: 2;
-}
-
-
-.leftPanel { right: 4% ; }
-.rightPanel { left: 4%; }
-
 /* Content Box */
 .contentBox {
   position: absolute;
-  top: 40%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 100%;
-  max-width: 585px;
-  min-height: 320px;
-  background-color: rgba(255, 255, 255, 0.08);
+  width: 85%;
+  height: 85%;
+  background-color: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
   border-radius: 20px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
   z-index: 2;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* --- FIX utama untuk teks --- */
+.contentWrapper {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 80px 30px 100px 30px; /* kasih ruang atas & bawah */
+  box-sizing: border-box;
+}
+
+.brandTopLeft {
+  position: absolute;
+  top: 18px;
+  left: 25px;
+  display: flex;
   align-items: center;
-  padding: 20px;
+  pointer-events: none;
 }
 
 .contentInside {
+  width: 100%;
+  max-width: 100%;
   color: white;
-  align-items: left;
+
+  /* biar teks panjang ga meledak keluar */
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+
+  box-sizing: border-box;
+  flex-shrink: 0;
+  min-width: 0;
 }
+
+.contentInside img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+.contentInside p {
+  margin: 12px 0;
+  line-height: 1.6;
+}
+/* --- end fix teks --- */
 
 /* Welcome text & Link */
 .welcomeText {
@@ -81,7 +93,7 @@
 }
 
 .tncLink {
-  color: #add8e6; /* Warna biru muda */
+  color: #add8e6;
   text-decoration: underline;
   cursor: pointer;
   font-weight: 600;
@@ -116,6 +128,25 @@
   padding: 12px 0;
   transition: opacity 0.36s ease;
   position: relative;
+
+  -webkit-mask-image: linear-gradient(
+    to right,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0.6) 6%,
+    rgba(0,0,0,1) 18%,
+    rgba(0,0,0,1) 82%,
+    rgba(0,0,0,0.6) 94%,
+    rgba(0,0,0,0) 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0.6) 6%,
+    rgba(0,0,0,1) 18%,
+    rgba(0,0,0,1) 82%,
+    rgba(0,0,0,0.6) 94%,
+    rgba(0,0,0,0) 100%
+  );
 }
 
 .buttonGroup {
@@ -124,6 +155,7 @@
   flex-shrink: 0;
   will-change: transform;
   padding: 8px 12px;
+  transition: transform 280ms cubic-bezier(.2,.8,.2,1);
 }
 
 /* Tooltip */
@@ -187,12 +219,8 @@
   transform: scale(1.05);
 }
 
-.navLeft { 
-  margin-right: 12px;
-}
-.navRight { 
-  margin-left: 12px;
-}
+.navLeft { margin-right: 12px; }
+.navRight { margin-left: 12px; }
 
 /* Action buttons */
 .actionButton {
@@ -208,8 +236,11 @@
   font-size: 1.4rem;
   color: white;
   background: linear-gradient(145deg, #1e90ff, #0052cc);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.28), inset 0 2px 6px rgba(255,255,255,0.06);
-  transition: transform 160ms cubic-bezier(.2,.9,.3,1), box-shadow 160ms;
+  box-shadow: 
+    0 6px 12px rgba(0,0,0,0.28), 
+    inset 0 2px 6px rgba(255,255,255,0.06);
+  transition: transform 160ms cubic-bezier(.2,.9,.3,1),
+              box-shadow 160ms;
 }
 
 .actionButton:active {
@@ -222,14 +253,13 @@
 }
 
 .logo {
-  width: 60px;
-  height: 60px;
-  ;
+  width: 45px;
+  height: 45px;
 }
 
 .whiteText {
-  width: 350px;
-  height: 130px;
+  width: 150px;
+  height: auto;
 }
 
 /* Media queries */
@@ -239,7 +269,8 @@
   .navButton { width: 28px; height: 28px; }
 }
 
-/* small accessibility tweak */
-.actionButton:focus { outline: 2px solid rgba(255,255,255,0.18); outline-offset: 3px; }
-
-/* End of CSS */
+/* Accessibility tweak */
+.actionButton:focus {
+  outline: 2px solid rgba(255,255,255,0.18);
+  outline-offset: 3px;
+}
