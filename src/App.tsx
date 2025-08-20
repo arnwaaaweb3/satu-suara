@@ -1,9 +1,9 @@
 // src/App.tsx
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import CentralPage from './pages/CentralPage'; // Import komponen GettingKnow
-import { VotingForm } from './components/VotingForm';
+import HomePage from './front-end/pages/HomePage';
+import CentralPage from './front-end/pages/CentralPage'; // Import komponen GettingKnow
+import { VotingForm } from './front-end/pages/VotingForm';
 
 const App: React.FC = () => {
   return (

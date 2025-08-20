@@ -29,7 +29,7 @@ const actionButtonsData = [
   { id: 2, icon: FaInfo, label: "Info", path: "/info" }, // Rute ini akan render di tempat
   { id: 3, icon: FaUser, label: "Kreator", path: "/creator" }, // Rute ini akan render di tempat
   { id: 4, icon: FaQuestion, label: "FAQ", path: "/faq" }, // Rute ini akan render di tempat
-  { id: 5, icon: FaBook, label: "Kiat", path: "/kiat" },
+  { id: 5, icon: FaBook, label: "Kiat", path: "/kiat" }, 
   { id: 6, icon: FaPoll, label: "Voting", path: "/vote" }, // Rute ini akan pindah halaman
 ];
 
