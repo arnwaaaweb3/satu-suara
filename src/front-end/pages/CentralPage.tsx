@@ -1,5 +1,4 @@
 // CentralPage.tsx
-
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
@@ -14,56 +13,48 @@ import InfoPageContent from "../components/InfoPageContent";
 import CreatorPageContent from "../components/CreatorPageContent";
 import FAQPageContent from "../components/FAQPageContent";
 
-// Peta komponen, hanya untuk rute yang di-render di halaman ini
 const pageMap: { [key: string]: React.FC } = {
   "/info": InfoPageContent,
   "/creator": CreatorPageContent,
   "/faq": FAQPageContent,
-  // Tambahkan rute lain yang dirender di sini, contoh:
-  // "/kiat": KiatPageContent,
 };
 
-// Data untuk tombol-tombol
 const actionButtonsData = [
-  { id: 1, icon: FaHome, label: "Beranda", path: "/" }, // Rute ini akan pindah halaman
-  { id: 2, icon: FaInfo, label: "Info", path: "/info" }, // Rute ini akan render di tempat
-  { id: 3, icon: FaUser, label: "Kreator", path: "/creator" }, // Rute ini akan render di tempat
-  { id: 4, icon: FaQuestion, label: "FAQ", path: "/faq" }, // Rute ini akan render di tempat
-  { id: 5, icon: FaBook, label: "Kiat", path: "/kiat" }, 
-  { id: 6, icon: FaPoll, label: "Voting", path: "/vote" }, // Rute ini akan pindah halaman
+  { id: 1, icon: FaHome, label: "Beranda", path: "/" },
+  { id: 2, icon: FaInfo, label: "Info", path: "/info" },
+  { id: 6, icon: FaPoll, label: "Voting", path: "/vote" },
+  { id: 4, icon: FaQuestion, label: "FAQ", path: "/faq" },
+  { id: 5, icon: FaBook, label: "Kiat", path: "/kiat" },
+  { id: 3, icon: FaUser, label: "Kreator", path: "/creator" },
 ];
 
 const CentralPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [buttonOpacity, setButtonOpacity] = useState(1);
-  const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
-  const [activePage, setActivePage] = useState<string>("/info"); // Default halaman awal
+  const [hoveredButton, setHoveredButton] = useState<{ id: number; x: number; y: number; label: string } | null>(null);
+  const [pressedButtonId, setPressedButtonId] = useState<number | null>(null);
+  const [activePage, setActivePage] = useState<string>("/info");
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const buttonGroupRef = useRef<HTMLDivElement | null>(null);
-
+  
   const offsetXTarget = useRef(0);
   const offsetXCurrent = useRef(0);
-
   const buttonsWidth = useRef(0);
   const buttonItemWidth = useRef(0);
   const gapWidth = 12;
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
   const isDragging = useRef(false);
   const startX = useRef(0);
   const lastOffsetX = useRef(0);
   const isClickingNav = useRef(false);
-
   const velocity = useRef(0);
   const lastMoveX = useRef(0);
-
   const lastBlurUpdateOffset = useRef<number | null>(null);
   const blurStyles = useRef<React.CSSProperties[]>([]);
   const [, forceRerender] = useState(0);
 
   const navigate = useNavigate();
-
   const ActivePageComponent = useMemo(() => pageMap[activePage] || null, [activePage]);
 
   const snapToNearest = useCallback(() => {
@@ -139,9 +130,7 @@ const CentralPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const assets = [
-      "/background.png", "/white-logo.png", "/white-text.png", "/blue-logo.ico",
-    ];
+    const assets = [ "/background.png", "/white-logo.png", "/white-text.png", "/blue-logo.ico" ];
     let loadedCount = 0;
     const checkLoadingStatus = () => {
       loadedCount++;
@@ -276,24 +265,42 @@ const CentralPage: React.FC = () => {
       offsetXTarget.current += scrollStep;
     }
   };
-  const onButtonPointerDown = (e: React.PointerEvent, label: string) => {
+  
+  const handleButtonMouseEnter = (e: React.MouseEvent, button: typeof actionButtonsData[0]) => {
     const buttonRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    setTooltip({ label, x: buttonRect.left + buttonRect.width / 2, y: buttonRect.top });
+    setHoveredButton({
+      id: button.id,
+      label: button.label,
+      x: buttonRect.left + buttonRect.width / 2,
+      y: buttonRect.top,
+    });
   };
 
-  const onButtonPointerUp = (path: string) => {
-    setTooltip(null);
-    if (!isDragging.current && !isClickingNav.current) {
-      if (path in pageMap) {
-        setActivePage(path);
-      } else {
-        navigate(path);
-      }
+  const handleButtonMouseLeave = () => {
+    setHoveredButton(null);
+  };
+  
+  const handleButtonPointerDown = (e: React.PointerEvent, id: number) => {
+    e.stopPropagation(); 
+    setPressedButtonId(id);
+    setHoveredButton(null);
+  };
+
+  const handleButtonPointerUp = () => {
+    setPressedButtonId(null);
+  };
+
+  // --- FINAL FIX: Fungsi disederhanakan untuk langsung routing ---
+  const handleButtonClick = (path: string) => {
+    // Event `onClick` sudah cukup pintar untuk tidak aktif saat drag.
+    // Pengecekan manual dihapus karena menyebabkan bug.
+    if (path in pageMap) {
+      setActivePage(path);
+    } else {
+      navigate(path);
     }
   };
-  const onButtonPointerLeave = () => {
-    setTooltip(null);
-  };
+
   useEffect(() => {
     let animationFrameId: number;
     const lerp = (start: number, end: number, t: number) => start + (end - start) * t;
@@ -316,7 +323,6 @@ const CentralPage: React.FC = () => {
   return (
     <>
       {isLoading && <LoadingScreen />}
-
       {!isLoading && (
         <div
           className={styles.container}
@@ -351,23 +357,20 @@ const CentralPage: React.FC = () => {
               <img src="/blue-logo.ico" alt="SatuSuara-Logo" className={styles.logo} />
               <img src="/white-text.png" alt="SatuSuara-Text" className={styles.whiteText} />
             </div>
-            
             <div className={styles.contentWrapper}>
                 {ActivePageComponent ? <ActivePageComponent /> : <p>Maaf, tidak ada konten yang ditemukan.</p>}
             </div>
           </div>
-
+          
           <div className={styles.contentContainer}>
             <button
               className={`${styles.navButton} ${styles.navLeft}`}
               onClick={() => onClickNav('prev')}
               onPointerDown={() => onHoldStart('prev')}
-              onPointerUp={onHoldEnd}
-              onPointerLeave={onHoldEnd}
+              onPointerUp={onHoldEnd} onPointerLeave={onHoldEnd}
               aria-label="Previous"
-            >
-              <FaChevronLeft size={24} />
-            </button>
+            ><FaChevronLeft size={24} /></button>
+
             <div
               className={styles.buttonContainerWrapper}
               ref={containerRef}
@@ -376,15 +379,19 @@ const CentralPage: React.FC = () => {
               <div className={styles.buttonGroup} ref={buttonGroupRef}>
                 {actionButtonsData.map((button, index) => {
                   const IconComponent = button.icon;
+                  const buttonClassName = `${styles.actionButton} ${pressedButtonId === button.id ? styles.pressed : ''}`;
+                  
                   return (
                     <button
                       key={`${button.id}_${index}`}
-                      className={styles.actionButton}
+                      className={buttonClassName}
                       aria-label={button.label}
                       style={getBlurStyleForIndex(index)}
-                      onPointerDown={(e) => onButtonPointerDown(e, button.label)}
-                      onPointerUp={() => onButtonPointerUp(button.path)}
-                      onPointerLeave={onButtonPointerLeave}
+                      onMouseEnter={(e) => handleButtonMouseEnter(e, button)}
+                      onMouseLeave={handleButtonMouseLeave}
+                      onPointerDown={(e) => handleButtonPointerDown(e, button.id)}
+                      onPointerUp={handleButtonPointerUp}
+                      onClick={() => handleButtonClick(button.path)}
                     >
                       <IconComponent size={24} />
                     </button>
@@ -392,28 +399,26 @@ const CentralPage: React.FC = () => {
                 })}
               </div>
             </div>
+
             <button
               className={`${styles.navButton} ${styles.navRight}`}
               onClick={() => onClickNav('next')}
               onPointerDown={() => onHoldStart('next')}
-              onPointerUp={onHoldEnd}
-              onPointerLeave={onHoldEnd}
+              onPointerUp={onHoldEnd} onPointerLeave={onHoldEnd}
               aria-label="Next"
-            >
-              <FaChevronRight size={24} />
-            </button>
+            ><FaChevronRight size={24} /></button>
           </div>
 
-          {tooltip && (
+          {hoveredButton && (
             <div
               className={styles.tooltipText}
               style={{
-                left: tooltip.x,
-                top: tooltip.y,
+                left: hoveredButton.x,
+                top: hoveredButton.y,
                 transform: `translateX(-50%) translateY(-110%)`,
               }}
             >
-              <span className={styles.tooltipInner}>{tooltip.label}</span>
+              <span className={styles.tooltipInner}>{hoveredButton.label}</span>
               <div className={styles.tooltipArrow} />
             </div>
           )}

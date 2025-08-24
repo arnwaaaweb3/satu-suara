@@ -1,0 +1,193 @@
+/* src/front-end/styles/InfoPageContent.module.css */
+
+.wrapper {
+  width: 100%;
+  height: 100%;
+  padding: 20px 40px; /* Sedikit lebih lebar paddingnya */
+  box-sizing: border-box;
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section {
+  margin-bottom: 70px; /* Sedikit penyesuaian jarak */
+}
+
+.mainTitle {
+  font-size: 2.8rem; /* Sedikit lebih besar */
+  text-align: center;
+  margin-bottom: 20px;
+  background: -webkit-linear-gradient(120deg, #89f7fe, #66a6ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+.description, .conclusion {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  color: #c5c5c5; /* Warna sedikit redup biar judul lebih menonjol */
+}
+
+.subTitle {
+  font-size: 2.2rem; /* Sedikit lebih besar */
+  text-align: center;
+  margin-bottom: 40px;
+  color: #cce7ff;
+  font-weight: 600;
+}
+
+/* --- The "Why" Section --- */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.statCard {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  /* --- POLESAN 1: Efek Glassmorphism --- */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.statCard:hover {
+  transform: translateY(-8px) scale(1.02);
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.statCard h3 {
+  font-size: 2.2rem;
+  color: #89f7fe;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.statCard p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 0;
+  color: #c5c5c5;
+}
+
+/* --- Vision & Mission Section --- */
+.visionMissionWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.vision h2, .mission h2 {
+  text-align: left;
+}
+
+.vision blockquote {
+  border-left: 4px solid #66a6ff; /* Sedikit lebih tebal */
+  padding-left: 25px;
+  margin: 0;
+  font-style: italic;
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #e0e0e0;
+}
+
+.mission ol {
+  list-style: none;
+  padding-left: 0;
+  counter-reset: mission-counter;
+}
+
+.mission li {
+  position: relative;
+  padding-left: 45px;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+.mission li::before {
+  counter-increment: mission-counter;
+  content: counter(mission-counter);
+  position: absolute;
+  left: 0;
+  top: -2px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #66a6ff, #89f7fe);
+  color: #051421;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* --- POLESAN 2: Detail Tipografi Premium --- */
+  box-shadow: 0 2px 8px rgba(102, 166, 255, 0.4);
+  transition: transform 0.2s ease;
+}
+
+.mission li:hover::before {
+  transform: scale(1.1);
+}
+
+/* --- Indicators Section --- */
+.indicatorsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+}
+
+.indicatorCategory {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.05); /* Tambah border halus */
+  /* --- POLESAN 1: Efek Glassmorphism --- */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.indicatorCategory h4 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  color: #a2d2ff;
+  margin-bottom: 15px;
+}
+
+.indicatorCategory ul {
+  padding-left: 20px;
+  margin: 0;
+  color: #c5c5c5;
+}
+
+.indicatorCategory li {
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+/* Media Query for larger screens */
+@media (min-width: 992px) {
+  .visionMissionWrapper {
+    flex-direction: row;
+    gap: 60px;
+    align-items: flex-start;
+  }
+  .vision, .mission {
+    flex: 1;
+  }
+}
