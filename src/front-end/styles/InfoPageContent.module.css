@@ -32,7 +32,17 @@
   display: flex;
   flex-direction: column;
   position: relative;
+
+  /* CSS untuk efek hover */
+  transition: all 0.5s ease-in-out;
 }
+
+/* Tambahkan class baru untuk efek hover */
+.heroCard:hover {
+  background-image: url("/public/containerOnehover.png");
+  /* Kamu bisa sesuaikan animasi di sini kalau mau */
+}
+
 
 /* Perubahan: Aturan untuk div .votingGraphic */
 .votingGraphic {
