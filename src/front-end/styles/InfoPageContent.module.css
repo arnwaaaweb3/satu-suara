@@ -3,10 +3,9 @@
 .wrapper {
   width: 100%;
   height: 100%;
-  padding: 20px 40px; /* Sedikit lebih lebar paddingnya */
+  padding: 20px 40px;
   box-sizing: border-box;
   color: white;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   animation: fadeIn 0.8s ease-in-out;
 }
 
@@ -16,38 +15,105 @@
 }
 
 .section {
-  margin-bottom: 70px; /* Sedikit penyesuaian jarak */
+  margin-bottom: 70px;
+}
+
+.heroCard {
+  background-image: url("/public/containerOne.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  padding: 40px;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 900px;
+  min-height: 450px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Perubahan: Aturan untuk div .votingGraphic */
+.votingGraphic {
+  position: absolute;
+  top: 20px;
+  right: 0px;
+  width: 200px;
+  height: 200px;
+  /* Properti yang benar untuk gambar latar belakang */
+  background-image: url("/public/votegraaaah.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  /* Transisi untuk efek hover yang mulus */
+  transition: background-image 0.5s ease-in-out; 
+}
+
+.heroContentWrapper {
+  text-align: right;
+  max-width: 450px;
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  margin: 0;
 }
 
 .mainTitle {
-  font-size: 2.8rem; /* Sedikit lebih besar */
-  text-align: center;
-  margin-bottom: 20px;
-  background: -webkit-linear-gradient(120deg, #89f7fe, #66a6ff);
+  font-size: 2.75rem;
+  text-align: right;
+  background: -webkit-linear-gradient(145deg, #0041a8, #00307a);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 700;
+  margin-left: 100px;
+  position: relative;
 }
 
-.description, .conclusion {
+.description{
   font-size: 1.1rem;
-  line-height: 1.7;
+  line-height: 1.5rem;
+  text-align: right;
+  max-width: 980px;
+  background: -webkit-linear-gradient(145deg, #0041a8, #00307a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-top: -10px;
+  position: relative;
+}
+
+.mainTitle, .description {
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
+}
+
+.conclusion {
+  font-size: 1.1rem;
+  line-height: 1.5rem;
   text-align: center;
   max-width: 800px;
   margin: 0 auto;
-  color: #c5c5c5; /* Warna sedikit redup biar judul lebih menonjol */
+  color: #c5c5c5;
+}
+
+.conclusionJustified {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  text-align: justify;
+  max-width: 800px;
+  margin: 0 auto;
+  color: #c5c5c5;
 }
 
 .subTitle {
-  font-size: 2.2rem; /* Sedikit lebih besar */
+  font-size: 2.2rem;
   text-align: center;
   margin-bottom: 40px;
   color: #cce7ff;
   font-weight: 600;
 }
 
-/* --- The "Why" Section --- */
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -62,7 +128,6 @@
   padding: 25px;
   text-align: center;
   transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
-  /* --- POLESAN 1: Efek Glassmorphism --- */
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -76,8 +141,7 @@
 .statCard h3 {
   font-size: 2.2rem;
   color: #89f7fe;
-  margin-top: 0;
-  margin-bottom: 10px;
+  margin: 0 0 10px;
 }
 
 .statCard p {
@@ -87,7 +151,6 @@
   color: #c5c5c5;
 }
 
-/* --- Vision & Mission Section --- */
 .visionMissionWrapper {
   display: flex;
   flex-direction: column;
@@ -99,7 +162,7 @@
 }
 
 .vision blockquote {
-  border-left: 4px solid #66a6ff; /* Sedikit lebih tebal */
+  border-left: 4px solid #66a6ff;
   padding-left: 25px;
   margin: 0;
   font-style: italic;
@@ -108,56 +171,99 @@
   color: #e0e0e0;
 }
 
-.mission ol {
+.missionList {
   list-style: none;
   padding-left: 0;
-  counter-reset: mission-counter;
+  margin: 0;
 }
 
-.mission li {
-  position: relative;
-  padding-left: 45px;
+.missionList li {
+  display: flex;
+  align-items: center;
+  gap: 15px;
   margin-bottom: 15px;
   font-size: 1.1rem;
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
-.mission li::before {
-  counter-increment: mission-counter;
-  content: counter(mission-counter);
-  position: absolute;
-  left: 0;
-  top: -2px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #66a6ff, #89f7fe);
-  color: #051421;
-  font-weight: bold;
+.missionList li:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  transform: translateX(5px);
+  box-shadow: 0 4px 15px rgba(102, 166, 255, 0.15);
+}
+
+.missionIcon {
+  color: #66a6ff;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 8px rgba(102, 166, 255, 0.4));
+}
+
+.indicatorsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.indicatorNav {
+  display: flex;
+  gap: 10px;
+}
+
+.indicatorNavBtn {
+  width: 40px;
+  height: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
-  /* --- POLESAN 2: Detail Tipografi Premium --- */
-  box-shadow: 0 2px 8px rgba(102, 166, 255, 0.4);
-  transition: transform 0.2s ease;
+  cursor: pointer;
+  border-radius: 10px;
+  border: none;
+  font-size: 1rem;
+  color: white;
+  background: linear-gradient(145deg, #1e90ff, #0052cc);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25), inset 0 1px 3px rgba(255,255,255,0.06);
+  transition: all 0.2s cubic-bezier(.2,.9,.3,1);
+  flex-shrink: 0;
 }
 
-.mission li:hover::before {
-  transform: scale(1.1);
+.indicatorNavBtn:hover:not(:disabled) {
+  background: linear-gradient(145deg, #3cabff, #0061f7);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.08);
 }
 
-/* --- Indicators Section --- */
+.indicatorNavBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.indicatorsSliderContainer {
+  overflow: hidden;
+}
+
 .indicatorsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  display: flex;
   gap: 25px;
+  padding: 10px 0;
+  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .indicatorCategory {
+  flex: 0 0 300px;
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   padding: 25px;
-  border: 1px solid rgba(255, 255, 255, 0.05); /* Tambah border halus */
-  /* --- POLESAN 1: Efek Glassmorphism --- */
+  border: 1px solid rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
 }
@@ -180,7 +286,6 @@
   font-size: 0.95rem;
 }
 
-/* Media Query for larger screens */
 @media (min-width: 992px) {
   .visionMissionWrapper {
     flex-direction: row;
@@ -189,5 +294,34 @@
   }
   .vision, .mission {
     flex: 1;
+  }
+}
+
+@media (max-width: 1200px) {
+  .indicatorCategory {
+    flex-basis: calc((100% / 2) - (25px / 2));
+  }
+}
+
+@media (max-width: 768px) {
+  .indicatorsHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .indicatorsHeader .subTitle {
+    margin-bottom: 20px;
+  }
+  .indicatorNav {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .indicatorCategory {
+    flex-basis: 100%;
+  }
+  .votingGraphic {
+    width: 250px;
+    height: 250px;
+    top: 20px;
+    right: 20px;
   }
 }

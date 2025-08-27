@@ -1,4 +1,4 @@
-// CentralPage.tsx
+// src/front-end/pages/CentralPage.tsx
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
@@ -47,6 +47,7 @@ const CentralPage: React.FC = () => {
   const isDragging = useRef(false);
   const startX = useRef(0);
   const lastOffsetX = useRef(0);
+  const dragDeltaX = useRef(0);
   const isClickingNav = useRef(false);
   const velocity = useRef(0);
   const lastMoveX = useRef(0);
@@ -187,7 +188,8 @@ const CentralPage: React.FC = () => {
     const container = containerRef.current;
     if (!container) return;
     const onPointerDown = (e: PointerEvent) => {
-      isDragging.current = true;
+      isDragging.current = false; 
+      dragDeltaX.current = 0; 
       startX.current = e.pageX;
       lastOffsetX.current = offsetXTarget.current;
       lastMoveX.current = e.pageX;
@@ -197,8 +199,13 @@ const CentralPage: React.FC = () => {
       container.style.userSelect = "none";
     };
     const onPointerMove = (e: PointerEvent) => {
-      if (!isDragging.current) return;
+      if (!(container as HTMLElement).hasPointerCapture(e.pointerId)) return;
       const deltaX = e.pageX - startX.current;
+      dragDeltaX.current = deltaX;
+      if (Math.abs(deltaX) > 5 && !isDragging.current) {
+        isDragging.current = true;
+      }
+      if (!isDragging.current) return;
       let newOffset = lastOffsetX.current + deltaX;
       velocity.current = e.pageX - lastMoveX.current;
       lastMoveX.current = e.pageX;
@@ -210,12 +217,16 @@ const CentralPage: React.FC = () => {
       offsetXTarget.current = newOffset;
     };
     const onPointerUp = (e: PointerEvent) => {
-      isDragging.current = false;
       try { (container as HTMLElement).releasePointerCapture(e.pointerId); } catch (err) {}
       container.style.cursor = "grab";
       container.style.userSelect = "auto";
-      requestAnimationFrame(inertiaScroll);
-      setTimeout(() => (isClickingNav.current = false), 50);
+      if(isDragging.current) {
+        requestAnimationFrame(inertiaScroll);
+      }
+      setTimeout(() => {
+        isDragging.current = false;
+        isClickingNav.current = false;
+      }, 50);
     };
     container.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("pointermove", onPointerMove);
@@ -280,8 +291,7 @@ const CentralPage: React.FC = () => {
     setHoveredButton(null);
   };
   
-  const handleButtonPointerDown = (e: React.PointerEvent, id: number) => {
-    e.stopPropagation(); 
+  const handleButtonPointerDown = (id: number) => {
     setPressedButtonId(id);
     setHoveredButton(null);
   };
@@ -289,11 +299,11 @@ const CentralPage: React.FC = () => {
   const handleButtonPointerUp = () => {
     setPressedButtonId(null);
   };
-
-  // --- FINAL FIX: Fungsi disederhanakan untuk langsung routing ---
+  
   const handleButtonClick = (path: string) => {
-    // Event `onClick` sudah cukup pintar untuk tidak aktif saat drag.
-    // Pengecekan manual dihapus karena menyebabkan bug.
+    if (isDragging.current || Math.abs(dragDeltaX.current) > 5) {
+      return;
+    }
     if (path in pageMap) {
       setActivePage(path);
     } else {
@@ -318,6 +328,7 @@ const CentralPage: React.FC = () => {
     animate();
     return () => cancelAnimationFrame(animationFrameId);
   }, [computeBlurStyles]);
+
   const getBlurStyleForIndex = (idx: number) => blurStyles.current[idx] || {};
 
   return (
@@ -358,7 +369,7 @@ const CentralPage: React.FC = () => {
               <img src="/white-text.png" alt="SatuSuara-Text" className={styles.whiteText} />
             </div>
             <div className={styles.contentWrapper}>
-                {ActivePageComponent ? <ActivePageComponent /> : <p>Maaf, tidak ada konten yang ditemukan.</p>}
+              {ActivePageComponent ? <ActivePageComponent /> : <p>Maaf, tidak ada konten yang ditemukan.</p>}
             </div>
           </div>
           
@@ -389,8 +400,9 @@ const CentralPage: React.FC = () => {
                       style={getBlurStyleForIndex(index)}
                       onMouseEnter={(e) => handleButtonMouseEnter(e, button)}
                       onMouseLeave={handleButtonMouseLeave}
-                      onPointerDown={(e) => handleButtonPointerDown(e, button.id)}
+                      onPointerDown={() => handleButtonPointerDown(button.id)}
                       onPointerUp={handleButtonPointerUp}
+                      onPointerLeave={handleButtonPointerUp}
                       onClick={() => handleButtonClick(button.path)}
                     >
                       <IconComponent size={24} />

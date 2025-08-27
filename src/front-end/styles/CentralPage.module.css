@@ -1,8 +1,4 @@
-/*
-  -----------------------------
-  CentralPage.module.css
-  -----------------------------
-*/
+/* src/front-end/styles/CentralPage.module.css */
 
 /* General */
 .container {
@@ -34,18 +30,31 @@
   z-index: 2;
   padding: 0;
   box-shadow: none;
+  display: flex; /* Tambahan untuk memastikan contentWrapper mengisi ruang */
+  flex-direction: column; /* Tambahan */
 }
 
-/* --- FIX utama untuk teks --- */
 .contentWrapper {
+  flex: 1;
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 80px 30px 100px 30px; /* kasih ruang atas & bawah */
+  padding: 80px 40px 100px 40px;
   box-sizing: border-box;
+  /* --- UPDATE: Memperbesar area 'blur tunnel' --- */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 250px 
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 120px
+  );
 }
 
 .brandTopLeft {
@@ -55,53 +64,12 @@
   display: flex;
   align-items: center;
   pointer-events: none;
-}
-
-.contentInside {
-  width: 100%;
-  max-width: 100%;
-  color: white;
-
-  /* biar teks panjang ga meledak keluar */
-  word-break: break-word;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  white-space: normal;
-
-  box-sizing: border-box;
-  flex-shrink: 0;
-  min-width: 0;
-}
-
-.contentInside img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 8px;
-}
-
-.contentInside p {
-  margin: 12px 0;
-  line-height: 1.6;
-}
-/* --- end fix teks --- */
-
-/* Welcome text & Link */
-.welcomeText {
-  color: white;
-  font-size: 1rem;
-}
-
-.tncLink {
-  color: #add8e6;
-  text-decoration: underline;
-  cursor: pointer;
-  font-weight: 600;
+  z-index: 10; /* Pastikan di atas konten */
 }
 
 /* Content container (bottom control) */
 .contentContainer {
-  position: absolute;
+  position: fixed; /* Ubah ke fixed agar tidak ikut scroll */
   bottom: 6%;
   left: 50%;
   transform: translateX(-50%);
@@ -128,7 +96,6 @@
   padding: 12px 0;
   transition: opacity 0.36s ease;
   position: relative;
-
   -webkit-mask-image: linear-gradient(
     to right,
     rgba(0,0,0,0) 0%,
@@ -173,16 +140,16 @@
   white-space: nowrap;
   transform-origin: bottom center;
   opacity: 0;
-  transition: opacity 180ms ease, transform 180ms ease;
+  animation: fadeInTooltip 180ms ease forwards;
+}
+
+@keyframes fadeInTooltip {
+  to { opacity: 1; }
 }
 
 .tooltipInner {
   display: inline-block;
   transform: translateY(0);
-}
-
-.tooltipText[style] {
-  opacity: 1;
 }
 
 .tooltipArrow {
@@ -212,6 +179,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .navButton:hover {
@@ -241,31 +209,20 @@
     inset 0 2px 6px rgba(255,255,255,0.06);
   transition: transform 160ms cubic-bezier(.2,.9,.3,1),
               box-shadow 160ms,
-              background 200ms ease; /* Tambahkan transisi untuk background */
+              background 200ms ease;
 }
 
-.actionButton:active {
-  transform: translateY(2px) scale(0.995);
-  box-shadow: inset 0 4px 10px rgba(0,0,0,0.45);
-}
-
-/* Style untuk tombol saat di-hover (Logika 1) */
 .actionButton:hover {
-  /* Ubah gradien sedikit agar lebih cerah tapi tidak kontras */
   background: linear-gradient(145deg, #3cabff, #0061f7);
-  /* Beri sedikit efek mengangkat */
   transform: translateY(-2px);
   box-shadow: 
     0 8px 15px rgba(0,0,0,0.3), 
     inset 0 2px 4px rgba(255,255,255,0.08);
 }
 
-/* Style untuk tombol saat ditekan (Logika 2) */
 .actionButton.pressed {
-  /* Efek 'ditekan ke dalam' */
   transform: translateY(1px) scale(0.98);
   box-shadow: inset 0 4px 10px rgba(0,0,0,0.45);
-  /* Border yang diminta saat ditekan */
   outline: 2px solid rgba(0, 191, 255, 0.8);
   outline-offset: 3px;
 }
@@ -282,6 +239,12 @@
 .whiteText {
   width: 150px;
   height: auto;
+  margin-left: 12px;
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
 }
 
 /* Media queries */
@@ -292,8 +255,27 @@
 }
 
 /* Accessibility tweak */
-.actionButton:focus {
+.actionButton:focus-visible {
   outline: 2px solid rgba(255,255,255,0.18);
   outline-offset: 3px;
 }
 
+/* Desain Scrollbar Modern */
+.contentWrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.contentWrapper::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.contentWrapper::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #89f7fe, #66a6ff);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.contentWrapper::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #a2ffff, #80baff);
+}
