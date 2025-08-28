@@ -1,8 +1,20 @@
 // src/back-end/server.ts
+import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import { deployVotingApp, callVotingApp, getVotingResults } from "./algorand";
+import {
+  deployVotingApp,
+  callVotingApp,
+  getVotingResults,
+} from "./algorand";
+
+dotenv.config();
+console.log("dotenv loaded. RELAYER_MNEMONIC:", process.env.RELAYER_MNEMONIC); // Debug
+console.log("ADMIN_SECRET:", process.env.ADMIN_SECRET); // Debug
+if (!process.env.RELAYER_MNEMONIC) {
+  console.error("Error: RELAYER_MNEMONIC is not set in .env file!");
+}
 
 const app = express();
 const PORT = 4000;
