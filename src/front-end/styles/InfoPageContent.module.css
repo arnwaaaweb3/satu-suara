@@ -1,5 +1,6 @@
-/* src/front-end/styles/InfoPageContent.module.css */
-
+/* =============================
+   Global Wrapper & Animation
+============================= */
 .wrapper {
   width: 100%;
   height: 100%;
@@ -10,14 +11,26 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
+/* =============================
+   Sections
+============================= */
 .section {
   margin-bottom: 70px;
 }
 
+/* =============================
+   Hero Section
+============================= */
 .heroCard {
   background-image: url("/public/containerOne.png");
   background-size: 100% 100%;
@@ -32,32 +45,40 @@
   display: flex;
   flex-direction: column;
   position: relative;
-
-  /* CSS untuk efek hover */
-  transition: all 0.5s ease-in-out;
 }
 
-/* Tambahkan class baru untuk efek hover */
-.heroCard:hover {
+/* Hover Overlay */
+.heroCard:global(::before) {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-image: url("/public/containerOnehover.png");
-  /* Kamu bisa sesuaikan animasi di sini kalau mau */
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
 }
 
+.heroCard:hover:global(::before) {
+  opacity: 1;
+}
 
-/* Perubahan: Aturan untuk div .votingGraphic */
+/* Floating voting graphic */
 .votingGraphic {
   position: absolute;
   top: 20px;
-  right: 0px;
+  right: 0;
   width: 200px;
   height: 200px;
-  /* Properti yang benar untuk gambar latar belakang */
   background-image: url("/public/votegraaaah.png");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  /* Transisi untuk efek hover yang mulus */
-  transition: background-image 0.5s ease-in-out; 
+  transition: background-image 0.5s ease-in-out;
 }
 
 .heroContentWrapper {
@@ -81,7 +102,7 @@
   position: relative;
 }
 
-.description{
+.description {
   font-size: 1.1rem;
   line-height: 1.5rem;
   text-align: right;
@@ -94,10 +115,14 @@
   position: relative;
 }
 
-.mainTitle, .description {
+.mainTitle,
+.description {
   text-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
 }
 
+/* =============================
+   Text Sections
+============================= */
 .conclusion {
   font-size: 1.1rem;
   line-height: 1.5rem;
@@ -124,6 +149,9 @@
   font-weight: 600;
 }
 
+/* =============================
+   Stats Grid
+============================= */
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -161,13 +189,17 @@
   color: #c5c5c5;
 }
 
+/* =============================
+   Vision & Mission
+============================= */
 .visionMissionWrapper {
   display: flex;
   flex-direction: column;
   gap: 40px;
 }
 
-.vision h2, .mission h2 {
+.vision h2,
+.mission h2 {
   text-align: left;
 }
 
@@ -215,6 +247,9 @@
   filter: drop-shadow(0 0 8px rgba(102, 166, 255, 0.4));
 }
 
+/* =============================
+   Indicators / Slider
+============================= */
 .indicatorsHeader {
   display: flex;
   justify-content: space-between;
@@ -296,13 +331,17 @@
   font-size: 0.95rem;
 }
 
+/* =============================
+   Responsive
+============================= */
 @media (min-width: 992px) {
   .visionMissionWrapper {
     flex-direction: row;
     gap: 60px;
     align-items: flex-start;
   }
-  .vision, .mission {
+  .vision,
+  .mission {
     flex: 1;
   }
 }
