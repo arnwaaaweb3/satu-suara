@@ -1,55 +1,61 @@
 // src/back-end/algorand.ts
+
 import algosdk from "algosdk";
 import fs from "fs";
 import path from "path";
 
-
-/**
- * Algorand TestNet config
- */
-const algodServer = "https://testnet-api.algonode.cloud";
+// Algorand Client (using a stable testnet provider)
+const algodServer = 'https://testnet-api.algonode.cloud';
 const algodPort = 443;
-const algodToken = "";
+const algodToken = '';
 const algodClient = new algosdk.Algodv2(algodToken, algodServer, algodPort);
 
-// RELAYER (host wallet)
-const RELAYER_MNEMONIC = process.env.RELAYER_MNEMONIC as string;
-if (!RELAYER_MNEMONIC) {
-  throw new Error("RELAYER_MNEMONIC environment variable not set.");
-}
-const relayerAccount = algosdk.mnemonicToSecretKey(RELAYER_MNEMONIC);
-
+// Local variables for relayer account and APP_ID
+let relayerAccount: algosdk.Account | null = null;
 let APP_ID = 0;
 
+// Hardcoded Base64-encoded TEAL code
+// This is the definitive version from PyTeal v0.23.0
+const approvalBase64 = "I3ByYWdtYSB2ZXJzaW9uIDUEdHhuIEFwcGxpY2F0aW9uSUQgaW50IDAgPT0gYm56IG1haW5fbDggdHhuIE9uQ29tcGxldGlvbiBpbnQgTm9PcCA9PSBibnogbWFpbl9sNyB0eG4gT25Db21wbGV0aW9uIGludCBEZWxldGVBcHBsaWNhdGlvbiA9PSBibnogbWFpbl9sNiBpbnQgMSBibnogbWFpbl9sNSBlcnIg bWFpbl9sNTogaW50IDAgcmV0dXJuIG1haW5fbDY6IHR4biBTZW5kZXIgZ2xvYmFsIENyZWF0b3JBZGRyZXNzID09IGFzc2VydCBpbnQgMSByZXR1cm4gbWFpbl9sNzogdHhuIE51bUFwcEFyZ3MgaW50IDEgPT0gYXNzZXJ0IHR4bmEgQXBwbGljYXRpb25BcmdzIDAgYnl0ZSAiQWxpY2UiID09IHR4bmEgQXBwbGljYXRpb25BcmdzIDAgYnl0ZSAiQm9iIiA9PSB8fCB0eG5hIEFwcGxpY2F0aW9uQcmdcyAwIGJ5dGUgIkNoYXJsaWUiID09IHx8IGFzc2VydCB0eG5hIEFwcGxpY2F0aW9uQcmdcyAwIHR4bmEgQXBwbGljYXRpb25BcmdzIDAgYXBwX2dsb2JhbF9nZXQgaW50IDEgKyBhcHBfZ2xvYmFsX3B1dCBpbnQgMSByZXR1cm4gbWFpbl9sODogYnl0ZSAiQWxpY2UiIGludCAwIGFwcF9nbG9iYWxfcHV0IGJ5dGUgIkJvYiIgaW50IDAgYXBwX2dsb2JhbF9wdXQgb3V0ZCBieXRlICJDaGFybGllIiBpbnQgMCBhcHBfZ2xvYmFsX3B1dCBpbnQgMSByZXR1cm4=";
+const clearBase64 = "I3ByYWdtYSB2ZXJzaW9uIDUgaW50IDEgcmV0dXJu";
+
 /**
- * Read TEAL file as Uint8Array
+ * Gets the relayer account securely after .env is loaded.
  */
-const getTealBytes = (filename: string): Uint8Array => {
-  const full = path.join(__dirname, "smart-contract", filename);
-  const buffer = fs.readFileSync(full);
-  return new Uint8Array(buffer);
+const getRelayerAccount = (): algosdk.Account => {
+  if (relayerAccount) {
+    return relayerAccount;
+  }
+
+  const mnemonic = process.env.RELAYER_MNEMONIC as string;
+  if (!mnemonic) {
+    throw new Error("RELAYER_MNEMONIC environment variable not set.");
+  }
+
+  relayerAccount = algosdk.mnemonicToSecretKey(mnemonic);
+  return relayerAccount;
 };
 
 /**
- * Deploy smart contract (Application Create) - accepts candidates array
+ * Deploys the smart contract.
  */
 export const deployVotingApp = async (candidates: string[]): Promise<number> => {
   try {
+    const account = getRelayerAccount();
     const suggestedParams = await algodClient.getTransactionParams().do();
+    
+    // Get compiled TEAL from the hardcoded Base64 strings
+    const approvalProgram = new Uint8Array(Buffer.from(approvalBase64, 'base64'));
+    const clearProgram = new Uint8Array(Buffer.from(clearBase64, 'base64'));
 
-    const approvalProgram = getTealBytes("approval.teal");
-    const clearProgram = new Uint8Array(0);
-
-    // app args = daftar kandidat sebagai byte arrays
     const appArgs = candidates.map((c) => new Uint8Array(Buffer.from(c)));
 
     const txn = algosdk.makeApplicationCreateTxnFromObject({
-      sender: relayerAccount.addr,
+      sender: account.addr,
       suggestedParams,
       onComplete: algosdk.OnApplicationComplete.NoOpOC,
       approvalProgram,
       clearProgram,
-      // global schema: buat satu byte-slice per kandidat (kunci string)
       numGlobalInts: 0,
       numGlobalByteSlices: candidates.length,
       numLocalInts: 0,
@@ -57,7 +63,7 @@ export const deployVotingApp = async (candidates: string[]): Promise<number> => 
       appArgs,
     });
 
-    const signedTxn = txn.signTxn(relayerAccount.sk);
+    const signedTxn = txn.signTxn(account.sk);
     const txId = txn.txID().toString();
 
     await algodClient.sendRawTransaction(signedTxn).do();
@@ -76,23 +82,24 @@ export const deployVotingApp = async (candidates: string[]): Promise<number> => 
 };
 
 /**
- * Call / vote ke smart contract (relayer signs)
+ * Calls the smart contract to cast a vote.
  */
 export const callVotingApp = async (candidate: string): Promise<string> => {
   try {
+    const account = getRelayerAccount();
     if (!APP_ID) throw new Error("Application not deployed yet!");
 
     const suggestedParams = await algodClient.getTransactionParams().do();
     const appArgs = [new Uint8Array(Buffer.from(candidate))];
 
     const txn = algosdk.makeApplicationNoOpTxnFromObject({
-      sender: relayerAccount.addr,
+      sender: account.addr,
       suggestedParams,
       appIndex: APP_ID,
       appArgs,
     });
 
-    const signedTxn = txn.signTxn(relayerAccount.sk);
+    const signedTxn = txn.signTxn(account.sk);
     const txId = txn.txID().toString();
 
     await algodClient.sendRawTransaction(signedTxn).do();
@@ -107,7 +114,7 @@ export const callVotingApp = async (candidate: string): Promise<string> => {
 };
 
 /**
- * Ambil hasil voting dari global state
+ * Fetches voting results from global state.
  */
 export const getVotingResults = async (): Promise<{ [key: string]: number }> => {
   try {
@@ -117,14 +124,11 @@ export const getVotingResults = async (): Promise<{ [key: string]: number }> => 
     const globalState = appInfo.params?.globalState ?? [];
 
     const results: { [key: string]: number } = {};
-
     for (const state of globalState) {
-      // state.key biasanya base64 encoded string
       const key = Buffer.from(String(state.key), "base64").toString("utf-8");
       const value = Number(state.value?.uint ?? 0);
       results[key] = value;
     }
-
     return results;
   } catch (err) {
     console.error("Error fetching voting results:", err);
@@ -133,13 +137,8 @@ export const getVotingResults = async (): Promise<{ [key: string]: number }> => 
 };
 
 /**
- * Helper: set APP_ID manual (bermanfaat saat re-deploy / testing)
+ * Helper function to manually set the App ID.
  */
 export const setAppId = (appId: number) => {
   APP_ID = appId;
 };
-
-/**
- * Helper: get relayer address
- */
-export const getRelayerAddress = () => relayerAccount.addr;

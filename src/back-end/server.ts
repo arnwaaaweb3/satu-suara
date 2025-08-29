@@ -1,4 +1,5 @@
 // src/back-end/server.ts
+
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
@@ -7,14 +8,11 @@ import {
   deployVotingApp,
   callVotingApp,
   getVotingResults,
+  setAppId,
 } from "./algorand";
 
+// Load .env file
 dotenv.config();
-console.log("dotenv loaded. RELAYER_MNEMONIC:", process.env.RELAYER_MNEMONIC); // Debug
-console.log("ADMIN_SECRET:", process.env.ADMIN_SECRET); // Debug
-if (!process.env.RELAYER_MNEMONIC) {
-  console.error("Error: RELAYER_MNEMONIC is not set in .env file!");
-}
 
 const app = express();
 const PORT = 4000;
@@ -23,22 +21,20 @@ const PORT = 4000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Deploy awal: ganti array ini kalau mau kandidat lain
 const initialCandidates = ["Alice", "Bob", "Charlie"];
 let appIsDeployed = false;
-
-// ADMIN SECRET (simple protection) - set di env or hardcode sementara
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "satu-suara-secret";
 
 // Deploy on server start
 deployVotingApp(initialCandidates)
   .then((appId) => {
     console.log(`Smart contract deployed with ID: ${appId}`);
+    setAppId(appId);
     appIsDeployed = true;
-    // optionally persist appId to disk here
   })
   .catch((err) => {
-    console.error("Failed to deploy smart contract:", err);
+    console.error("Failed to deploy smart contract:", err.message);
+    appIsDeployed = false;
   });
 
 // Healthcheck
@@ -46,7 +42,7 @@ app.get("/", (req, res) => {
   res.send("SatuSuara backend is running and ready! 🚀");
 });
 
-// Voting endpoint (relayer signs)
+// Voting endpoint
 app.post("/vote", async (req, res) => {
   if (!appIsDeployed) {
     return res.status(503).json({ error: "Voting application is not ready yet." });
@@ -81,13 +77,11 @@ app.get("/results", async (req, res) => {
   }
 });
 
-// Candidates endpoint (returns list of candidate keys)
+// Candidates endpoint
 app.get("/candidates", async (req, res) => {
   if (!appIsDeployed) {
-    // If not deployed yet, return initialCandidates so frontend has something
     return res.json({ candidates: initialCandidates });
   }
-
   try {
     const results = await getVotingResults();
     const candidates = Object.keys(results);
@@ -98,28 +92,19 @@ app.get("/candidates", async (req, res) => {
   }
 });
 
-/**
- * Admin redeploy endpoint
- * POST /deploy
- * body: { candidates: string[], secret: string }
- *
- * WARNING: redeploy will create a NEW application (APP_ID changes) and reset votes.
- */
+// Admin redeploy endpoint
 app.post("/deploy", async (req, res) => {
   const { candidates, secret } = req.body;
-
   if (secret !== ADMIN_SECRET) {
     return res.status(401).json({ error: "Unauthorized" });
   }
-
   if (!Array.isArray(candidates) || candidates.length === 0) {
     return res.status(400).json({ error: "Candidates array required" });
   }
-
   try {
     const appId = await deployVotingApp(candidates);
+    setAppId(appId);
     appIsDeployed = true;
-    // optional: persist appId for restarts
     res.json({ message: "Deployed new voting app", appId });
   } catch (err) {
     console.error("Deploy error:", err);
