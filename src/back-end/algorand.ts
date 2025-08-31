@@ -1,5 +1,7 @@
 // src/back-end/algorand.ts
 
+// Buat ngecek balance TestNet Algorand pake command ini di terminal:
+// curl https://testnet-api.algonode.cloud/v2/accounts/[YOUR_RELAYER_ADDRESS]
 import algosdk from "algosdk";
 import fs from "fs";
 import path from "path";
@@ -13,11 +15,6 @@ const algodClient = new algosdk.Algodv2(algodToken, algodServer, algodPort);
 // Local variables for relayer account and APP_ID
 let relayerAccount: algosdk.Account | null = null;
 let APP_ID = 0;
-
-// Hardcoded Base64-encoded TEAL code
-// This is the definitive version from PyTeal v0.23.0
-const approvalBase64 = "I3ByYWdtYSB2ZXJzaW9uIDUEdHhuIEFwcGxpY2F0aW9uSUQgaW50IDAgPT0gYm56IG1haW5fbDggdHhuIE9uQ29tcGxldGlvbiBpbnQgTm9PcCA9PSBibnogbWFpbl9sNyB0eG4gT25Db21wbGV0aW9uIGludCBEZWxldGVBcHBsaWNhdGlvbiA9PSBibnogbWFpbl9sNiBpbnQgMSBibnogbWFpbl9sNSBlcnIg bWFpbl9sNTogaW50IDAgcmV0dXJuIG1haW5fbDY6IHR4biBTZW5kZXIgZ2xvYmFsIENyZWF0b3JBZGRyZXNzID09IGFzc2VydCBpbnQgMSByZXR1cm4gbWFpbl9sNzogdHhuIE51bUFwcEFyZ3MgaW50IDEgPT0gYXNzZXJ0IHR4bmEgQXBwbGljYXRpb25BcmdzIDAgYnl0ZSAiQWxpY2UiID09IHR4bmEgQXBwbGljYXRpb25BcmdzIDAgYnl0ZSAiQm9iIiA9PSB8fCB0eG5hIEFwcGxpY2F0aW9uQcmdcyAwIGJ5dGUgIkNoYXJsaWUiID09IHx8IGFzc2VydCB0eG5hIEFwcGxpY2F0aW9uQcmdcyAwIHR4bmEgQXBwbGljYXRpb25BcmdzIDAgYXBwX2dsb2JhbF9nZXQgaW50IDEgKyBhcHBfZ2xvYmFsX3B1dCBpbnQgMSByZXR1cm4gbWFpbl9sODogYnl0ZSAiQWxpY2UiIGludCAwIGFwcF9nbG9iYWxfcHV0IGJ5dGUgIkJvYiIgaW50IDAgYXBwX2dsb2JhbF9wdXQgb3V0ZCBieXRlICJDaGFybGllIiBpbnQgMCBhcHBfZ2xvYmFsX3B1dCBpbnQgMSByZXR1cm4=";
-const clearBase64 = "I3ByYWdtYSB2ZXJzaW9uIDUgaW50IDEgcmV0dXJu";
 
 /**
  * Gets the relayer account securely after .env is loaded.
@@ -37,6 +34,15 @@ const getRelayerAccount = (): algosdk.Account => {
 };
 
 /**
+ * Compiles TEAL code from a file to bytecode.
+ */
+const compileTeal = async (filePath: string): Promise<Uint8Array> => {
+  const tealCode = fs.readFileSync(path.resolve(__dirname, filePath), "utf8");
+  const compiled = await algodClient.compile(tealCode).do();
+  return new Uint8Array(Buffer.from(compiled.result, 'base64'));
+};
+
+/**
  * Deploys the smart contract.
  */
 export const deployVotingApp = async (candidates: string[]): Promise<number> => {
@@ -44,9 +50,9 @@ export const deployVotingApp = async (candidates: string[]): Promise<number> => 
     const account = getRelayerAccount();
     const suggestedParams = await algodClient.getTransactionParams().do();
     
-    // Get compiled TEAL from the hardcoded Base64 strings
-    const approvalProgram = new Uint8Array(Buffer.from(approvalBase64, 'base64'));
-    const clearProgram = new Uint8Array(Buffer.from(clearBase64, 'base64'));
+    // Compile TEAL from files
+    const approvalProgram = await compileTeal("smart-contract/approval.teal");
+    const clearProgram = await compileTeal("smart-contract/clear.teal");
 
     const appArgs = candidates.map((c) => new Uint8Array(Buffer.from(c)));
 
@@ -56,8 +62,8 @@ export const deployVotingApp = async (candidates: string[]): Promise<number> => 
       onComplete: algosdk.OnApplicationComplete.NoOpOC,
       approvalProgram,
       clearProgram,
-      numGlobalInts: 0,
-      numGlobalByteSlices: candidates.length,
+      numGlobalInts: candidates.length, // Allow integers for vote counts
+      numGlobalByteSlices: 0, // No byte slices needed
       numLocalInts: 0,
       numLocalByteSlices: 0,
       appArgs,
