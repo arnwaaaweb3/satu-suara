@@ -131,7 +131,11 @@ const CentralPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const assets = [ "/background.png", "/white-logo.png", "/white-text.png", "/blue-logo.ico" ];
+    const assets = [ 
+      "/background.svg", 
+      "/white-logo.png", 
+      "/white-text.svg", 
+      "/blue-logo.ico" ];
     let loadedCount = 0;
     const checkLoadingStatus = () => {
       loadedCount++;
@@ -338,7 +342,7 @@ const CentralPage: React.FC = () => {
         <div
           className={styles.container}
           style={{
-            backgroundImage: "url('/background.png')",
+            backgroundImage: "url('/background.svg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
@@ -366,7 +370,7 @@ const CentralPage: React.FC = () => {
           <div className={styles.contentBox}>
             <div className={styles.brandTopLeft}>
               <img src="/blue-logo.ico" alt="SatuSuara-Logo" className={styles.logo} />
-              <img src="/white-text.png" alt="SatuSuara-Text" className={styles.whiteText} />
+              <img src="/white-text.svg" alt="SatuSuara-Text" className={styles.whiteText} />
             </div>
             <div className={styles.contentWrapper}>
               {ActivePageComponent ? <ActivePageComponent /> : <p>Maaf, tidak ada konten yang ditemukan.</p>}

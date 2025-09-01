@@ -15,11 +15,10 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     const assets = [
-      '/background.png',
-      '/vektor2.png',
+      '/background.svg',
       '/vektor3.png',
       '/white-logo.png',
-      '/white-text.png'
+      '/white-text.svg'
     ];
 
     let loadedCount = 0;
@@ -52,7 +51,7 @@ const HomePage: React.FC = () => {
         <div
           className={styles.container}
           style={{
-            backgroundImage: "url('/background.png')",
+            backgroundImage: "url('/background.svg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat"
@@ -87,7 +86,7 @@ const HomePage: React.FC = () => {
               <img src="/white-logo.png" alt="Logo" className={styles.logo} />
             </FadeContent>
             <FadeContent slideY={20}>
-              <img src="/white-text.png" alt="SatuSuara" className={styles.textLogo} />
+              <img src="/white-text.svg" alt="SatuSuara" className={styles.textLogo} />
             </FadeContent>
           </div>
 

@@ -64,7 +64,7 @@ const InfoPageContent: React.FC = () => {
         <div className={styles.heroCard}>
           {/* Tambahan: Image baru di sini */}
           <img 
-            src="/votegraaaah.png" 
+            src="/votegraaaah.svg" 
             alt="Voting Graphic" 
             className={styles.votingGraphic} 
           />

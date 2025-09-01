@@ -6,14 +6,14 @@ const OrbitVerified: React.FC = () => {
     <div className={styles.wrapper}>
       {/* Block yang muter */}
       <img
-        src="/block.png"
+        src="/block.svg"
         alt="block"
         className={styles.block}
       />
 
       {/* Verified di tengah */}
       <img
-        src="/verified.png"
+        src="/verified.svg"
         alt="verified"
         className={styles.verified}
       />
