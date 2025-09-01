@@ -1,15 +1,13 @@
 // src/back-end/algorand.ts
 
-// Buat ngecek balance TestNet Algorand pake command ini di terminal:
-// curl https://testnet-api.algonode.cloud/v2/accounts/[YOUR_RELAYER_ADDRESS]
 import algosdk from "algosdk";
 import fs from "fs";
 import path from "path";
 
 // Algorand Client (using a stable testnet provider)
-const algodServer = 'https://testnet-api.algonode.cloud';
+const algodServer = "https://testnet-api.algonode.cloud";
 const algodPort = 443;
-const algodToken = '';
+const algodToken = "";
 const algodClient = new algosdk.Algodv2(algodToken, algodServer, algodPort);
 
 // Local variables for relayer account and APP_ID
@@ -20,9 +18,7 @@ let APP_ID = 0;
  * Gets the relayer account securely after .env is loaded.
  */
 const getRelayerAccount = (): algosdk.Account => {
-  if (relayerAccount) {
-    return relayerAccount;
-  }
+  if (relayerAccount) return relayerAccount;
 
   const mnemonic = process.env.RELAYER_MNEMONIC as string;
   if (!mnemonic) {
@@ -39,7 +35,7 @@ const getRelayerAccount = (): algosdk.Account => {
 const compileTeal = async (filePath: string): Promise<Uint8Array> => {
   const tealCode = fs.readFileSync(path.resolve(__dirname, filePath), "utf8");
   const compiled = await algodClient.compile(tealCode).do();
-  return new Uint8Array(Buffer.from(compiled.result, 'base64'));
+  return new Uint8Array(Buffer.from(compiled.result, "base64"));
 };
 
 /**
@@ -49,12 +45,13 @@ export const deployVotingApp = async (candidates: string[]): Promise<number> => 
   try {
     const account = getRelayerAccount();
     const suggestedParams = await algodClient.getTransactionParams().do();
-    
+
     // Compile TEAL from files
     const approvalProgram = await compileTeal("smart-contract/approval.teal");
     const clearProgram = await compileTeal("smart-contract/clear.teal");
 
-    const appArgs = candidates.map((c) => new Uint8Array(Buffer.from(c)));
+    // Store candidate names encoded as UTF-8
+    const appArgs = candidates.map((c) => new Uint8Array(Buffer.from(c, "utf-8")));
 
     const txn = algosdk.makeApplicationCreateTxnFromObject({
       sender: account.addr,
@@ -62,8 +59,8 @@ export const deployVotingApp = async (candidates: string[]): Promise<number> => 
       onComplete: algosdk.OnApplicationComplete.NoOpOC,
       approvalProgram,
       clearProgram,
-      numGlobalInts: candidates.length, // Allow integers for vote counts
-      numGlobalByteSlices: 0, // No byte slices needed
+      numGlobalInts: candidates.length, // one int per candidate
+      numGlobalByteSlices: candidates.length, // one byte slice per candidate name
       numLocalInts: 0,
       numLocalByteSlices: 0,
       appArgs,
@@ -96,7 +93,7 @@ export const callVotingApp = async (candidate: string): Promise<string> => {
     if (!APP_ID) throw new Error("Application not deployed yet!");
 
     const suggestedParams = await algodClient.getTransactionParams().do();
-    const appArgs = [new Uint8Array(Buffer.from(candidate))];
+    const appArgs = [new Uint8Array(Buffer.from(candidate, "utf-8"))];
 
     const txn = algosdk.makeApplicationNoOpTxnFromObject({
       sender: account.addr,
@@ -131,10 +128,19 @@ export const getVotingResults = async (): Promise<{ [key: string]: number }> => 
 
     const results: { [key: string]: number } = {};
     for (const state of globalState) {
-      const key = Buffer.from(String(state.key), "base64").toString("utf-8");
+      // Decode the Base64 key properly to UTF-8 string
+      const keyBase64 =
+        typeof state.key === "string"
+          ? state.key
+          : Buffer.from(state.key).toString("base64");
+
+      const decodedKey = Buffer.from(keyBase64, "base64").toString("utf-8");
       const value = Number(state.value?.uint ?? 0);
-      results[key] = value;
+
+      results[decodedKey] = value;
     }
+
+    console.log("Decoded Results:", results);
     return results;
   } catch (err) {
     console.error("Error fetching voting results:", err);
