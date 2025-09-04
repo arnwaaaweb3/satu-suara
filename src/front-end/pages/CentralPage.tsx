@@ -7,6 +7,7 @@ import LoadingScreen from "../components/LoadingScreen";
 import styles from "../styles/CentralPage.module.css";
 import { FaHome, FaInfo, FaUser, FaQuestion, FaBook, FaChevronLeft, FaChevronRight, FaPoll } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import CustomCursor from "../components/CustomCursor";
 
 // ----- Import Komponen Konten Halaman (yang akan di-render di tempat) -----
 import InfoPageContent from "../components/InfoPageContent";
@@ -34,6 +35,7 @@ const CentralPage: React.FC = () => {
   const [hoveredButton, setHoveredButton] = useState<{ id: number; x: number; y: number; label: string } | null>(null);
   const [pressedButtonId, setPressedButtonId] = useState<number | null>(null);
   const [activePage, setActivePage] = useState<string>("/info");
+  const [cursorType, setCursorType] = useState<'default' | 'click'>('default');
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const buttonGroupRef = useRef<HTMLDivElement | null>(null);
@@ -267,21 +269,30 @@ const CentralPage: React.FC = () => {
       snapToNearest();
     }
   };
+  
   const onClickNav = (direction: 'prev' | 'next') => {
     isClickingNav.current = true;
-    const scrollStep = direction === 'prev' ? (buttonItemWidth.current + gapWidth) : -(buttonItemWidth.current + gapWidth);
     const container = containerRef.current;
-    if (container && buttonsWidth.current > 0) {
-      const maxOffset = 0;
-      const minOffset = Math.min(0, -(buttonsWidth.current - container.offsetWidth));
-      const next = offsetXTarget.current + scrollStep;
-      offsetXTarget.current = Math.max(minOffset, Math.min(maxOffset, next));
-    } else {
-      offsetXTarget.current += scrollStep;
-    }
+    if (!container) return;
+    
+    const buttonItemPercentage = 0.1;
+    const gapPercentage = 0.01;      
+    
+    const containerWidth = container.offsetWidth;
+    const buttonWidth = containerWidth * buttonItemPercentage;
+    const gap = containerWidth * gapPercentage;
+    
+    const scrollStep = direction === 'prev' ? (buttonWidth + gap) : -(buttonWidth + gap);
+    
+    const maxOffset = 0;
+    const minOffset = Math.min(0, -(buttonsWidth.current - container.offsetWidth));
+    const next = offsetXTarget.current + scrollStep;
+    offsetXTarget.current = Math.max(minOffset, Math.min(maxOffset, next));
   };
   
+  // 👇 Gabungkan logika kursor dan tooltip di satu fungsi
   const handleButtonMouseEnter = (e: React.MouseEvent, button: typeof actionButtonsData[0]) => {
+    setCursorType('click');
     const buttonRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     setHoveredButton({
       id: button.id,
@@ -291,7 +302,9 @@ const CentralPage: React.FC = () => {
     });
   };
 
+  // 👇 Gabungkan logika kursor dan tooltip di satu fungsi
   const handleButtonMouseLeave = () => {
+    setCursorType('default');
     setHoveredButton(null);
   };
   
@@ -337,6 +350,7 @@ const CentralPage: React.FC = () => {
 
   return (
     <>
+      <CustomCursor cursorType={cursorType} />
       {isLoading && <LoadingScreen />}
       {!isLoading && (
         <div
@@ -383,6 +397,8 @@ const CentralPage: React.FC = () => {
               onClick={() => onClickNav('prev')}
               onPointerDown={() => onHoldStart('prev')}
               onPointerUp={onHoldEnd} onPointerLeave={onHoldEnd}
+              onMouseEnter={() => setCursorType('click')}
+              onMouseLeave={() => setCursorType('default')}
               aria-label="Previous"
             ><FaChevronLeft size={24} /></button>
 
@@ -402,6 +418,7 @@ const CentralPage: React.FC = () => {
                       className={buttonClassName}
                       aria-label={button.label}
                       style={getBlurStyleForIndex(index)}
+                      // 👇 Menggunakan fungsi yang sudah digabungkan
                       onMouseEnter={(e) => handleButtonMouseEnter(e, button)}
                       onMouseLeave={handleButtonMouseLeave}
                       onPointerDown={() => handleButtonPointerDown(button.id)}
@@ -421,6 +438,8 @@ const CentralPage: React.FC = () => {
               onClick={() => onClickNav('next')}
               onPointerDown={() => onHoldStart('next')}
               onPointerUp={onHoldEnd} onPointerLeave={onHoldEnd}
+              onMouseEnter={() => setCursorType('click')}
+              onMouseLeave={() => setCursorType('default')}
               aria-label="Next"
             ><FaChevronRight size={24} /></button>
           </div>

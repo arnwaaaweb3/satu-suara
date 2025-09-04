@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
 import styles from "../styles/HamburgerMenu.module.css";
 
-const HamburgerMenu: React.FC = () => {
+interface HamburgerMenuProps {
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+}
+
+const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onMouseEnter, onMouseLeave }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
@@ -39,6 +44,8 @@ const HamburgerMenu: React.FC = () => {
         className={styles.hamburgerButton}
         onClick={toggleMenu}
         aria-label="Toggle menu"
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
       >
         <div className={`${styles.line} ${isOpen ? styles.line1Open : ""}`} />
         <div className={`${styles.line} ${isOpen ? styles.line2Open : ""}`} />
@@ -46,28 +53,52 @@ const HamburgerMenu: React.FC = () => {
       </button>
 
       {/* Overlay */}
-      {/* Hanya overlay yang akan menggunakan kelas fadeOutOverlay saat menutup */}
+      {/* 👇 PENTING: Hapus onMouseEnter dan onMouseLeave dari sini */}
       {(isOpen || isClosing) && (
         <div 
           className={`${styles.overlay} ${isClosing ? styles.fadeOutOverlay : ""}`} 
-          onClick={closeMenu} 
+          onClick={closeMenu}
         />
       )}
 
       {/* Dropdown Menu */}
-      {/* Dropdown menu hanya akan muncul jika isOpen true dan langsung hilang saat false */}
       {isOpen && (
         <div className={styles.dropdownMenu}>
-          <a href="#home" className={styles.menuItem} onClick={closeMenu}>
+          {/* 👇 Pertahankan event handler di setiap link */}
+          <a
+            href="#home"
+            className={styles.menuItem}
+            onClick={closeMenu}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+          >
             Beranda
           </a>
-          <a href="#about" className={styles.menuItem} onClick={closeMenu}>
+          <a
+            href="#about"
+            className={styles.menuItem}
+            onClick={closeMenu}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+          >
             Tentang Kami
           </a>
-          <a href="#services" className={styles.menuItem} onClick={closeMenu}>
+          <a
+            href="#services"
+            className={styles.menuItem}
+            onClick={closeMenu}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+          >
             Layanan
           </a>
-          <a href="#contact" className={styles.menuItem} onClick={closeMenu}>
+          <a
+            href="#contact"
+            className={styles.menuItem}
+            onClick={closeMenu}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+          >
             Hubungi Kami
           </a>
         </div>

@@ -1,12 +1,16 @@
+\/* src/front-end/styles/OrbitVerified.module.css */
+
 .wrapper {
+  /* 👇 Posisikan di tengah vertikal di sisi kanan */
   position: absolute;
-  top: 5rem;
-  right: 7rem;
-  width: 500px; /* sama kayak vector2 */
+  top: 50%;
+  right: 7vw; /* Gunakan unit vw untuk jarak dari kanan */
+  width: 35vw; /* 👇 Ukuran proporsional dengan viewport */
   height: auto;
   z-index: 3;
-  animation: floatSlow 20s ease-in-out infinite; /* pelanin tempo floating */
+  animation: floatSlow 20s ease-in-out infinite;
   animation-delay: 0.5s;
+  transform: translateY(-50%); /* 👇 Ini kunci untuk vertical centering */
 }
 
 .wrapper img {
@@ -18,22 +22,24 @@
 /* Verified di tengah */
 .verified {
   position: absolute;
-  top: 180px;
-  left: 380px;
+  /* 👇 Posisikan tepat di tengah wrapper, tidak lagi pakai pixel */
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
-  width: 50px;
-  height: 50px;
+  width: 10%; /* 👇 Ukuran proporsional dengan wrapper */
+  height: auto;
 }
 
 /* Block muter keliling verified */
 .block {
   position: absolute;
-  top: 185px;
-  left: 380px;
-  width: 200px;
+  /* 👇 Posisikan tepat di tengah wrapper, tidak lagi pakai pixel */
+  top: 50%;
+  left: 50%;
+  width: 40%; /* 👇 Ukuran proporsional dengan wrapper */
   height: auto;
   transform: translate(-50%, -50%);
-  animation: orbit 50s linear infinite; /* pelanin rotasi */
+  animation: orbit 50s linear infinite;
 }
 
 /* Keyframes orbit */
@@ -49,9 +55,9 @@
 /* Keyframes floating */
 @keyframes floatSlow {
   0%, 100% { 
-    transform: translateY(0px) rotate(0deg); 
+    transform: translateY(0) rotate(0deg); 
   }
   50% { 
-    transform: translateY(-15px) rotate(2deg); 
+    transform: translateY(-1.5vh) rotate(2deg); /* 👇 Gunakan vh untuk gerakan vertikal */
   }
 }

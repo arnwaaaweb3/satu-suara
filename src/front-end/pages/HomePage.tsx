@@ -1,6 +1,6 @@
-// src/pages/HomePage.tsx
+// src/front-end/pages/HomePage.tsx
 import React, { useState, useEffect, ClipboardEvent, MouseEvent } from 'react';
-import { useNavigate } from 'react-router-dom'; // 👈 Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import BlurText from '../components/BlurText';
 import FadeContent from '../components/FadeContent';
 import Waves from '../components/Waves';
@@ -8,10 +8,12 @@ import HamburgerMenu from '../components/HamburgerMenu';
 import styles from '../styles/HomePage.module.css';
 import LoadingScreen from '../components/LoadingScreen';
 import OrbitVerified from "../components/OrbitVerified";
+import CustomCursor from "../components/CustomCursor";
 
 const HomePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate(); // 👈 Inisialisasi hook useNavigate
+  const [cursorType, setCursorType] = useState<'default' | 'click'>('default');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const assets = [
@@ -39,13 +41,13 @@ const HomePage: React.FC = () => {
     console.log('Landing text animation completed!');
   };
 
-  // 👈 Fungsi baru untuk menangani klik tombol
   const handleGetStartedClick = () => {
     navigate('/central');
   };
 
   return (
     <>
+      <CustomCursor cursorType={cursorType} />
       {isLoading && <LoadingScreen />}
       {!isLoading && (
         <div
@@ -80,41 +82,51 @@ const HomePage: React.FC = () => {
             />
           </div>
 
-          {/* Logo + Text (Top Layer) */}
-          <div className={styles.logoWrapper}>
-            <FadeContent slideY={20}>
-              <img src="/white-logo.png" alt="Logo" className={styles.logo} />
-            </FadeContent>
-            <FadeContent slideY={20}>
-              <img src="/white-text.svg" alt="SatuSuara" className={styles.textLogo} />
-            </FadeContent>
-          </div>
+          {/* 👇 PENTING: Tambahkan wrapper ini untuk layout yang responsif */}
+          <div className={styles.contentWrapper}>
+            {/* Logo + Text */}
+            <div className={styles.logoWrapper}>
+              <FadeContent slideY={20}>
+                <img src="/white-logo.png" alt="Logo" className={styles.logo} />
+              </FadeContent>
+              <FadeContent slideY={20}>
+                <img src="/white-text.svg" alt="SatuSuara" className={styles.textLogo} />
+              </FadeContent>
+            </div>
 
-          {/* Hamburger Menu */}
-          <HamburgerMenu />
-
-          {/* Heading */}
-          <div
-            className={styles.heading}
-            onCopy={(e: ClipboardEvent<HTMLDivElement>) => e.preventDefault()}
-            onMouseDown={(e: MouseEvent<HTMLDivElement>) => e.preventDefault()}
-            onContextMenu={(e: MouseEvent<HTMLDivElement>) => e.preventDefault()}
-          >
-            <BlurText
-              text="Sistem Demokrasi Digital — Voting Transparan, Aman, dan Berbasis Blockchain."
-              delay={100}
-              animateBy="words"
-              direction="top"
-              onAnimationComplete={handleAnimationComplete}
+            {/* Hamburger Menu */}
+            <HamburgerMenu
+              onMouseEnter={() => setCursorType('click')}
+              onMouseLeave={() => setCursorType('default')}
             />
 
-            {/* CTA Button with Fade Animation */}
-            <FadeContent slideY={20}>
-              {/* 👈 Panggil fungsi handleGetStartedClick saat tombol diklik */}
-              <button className={styles.ctaButton} onClick={handleGetStartedClick}>
-                Get Started
-              </button>
-            </FadeContent>
+            {/* Heading */}
+            <div
+              className={styles.heading}
+              onCopy={(e: ClipboardEvent<HTMLDivElement>) => e.preventDefault()}
+              onMouseDown={(e: MouseEvent<HTMLDivElement>) => e.preventDefault()}
+              onContextMenu={(e: MouseEvent<HTMLDivElement>) => e.preventDefault()}
+            >
+              <BlurText
+                text="Sistem Demokrasi Digital — Voting Transparan, Aman, dan Berbasis Blockchain."
+                delay={100}
+                animateBy="words"
+                direction="top"
+                onAnimationComplete={handleAnimationComplete}
+              />
+
+              {/* CTA Button with Fade Animation */}
+              <FadeContent slideY={20}>
+                <button
+                  className={styles.ctaButton}
+                  onClick={handleGetStartedClick}
+                  onMouseEnter={() => setCursorType('click')}
+                  onMouseLeave={() => setCursorType('default')}
+                >
+                  Get Started
+                </button>
+              </FadeContent>
+            </div>
           </div>
         </div>
       )}

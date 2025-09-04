@@ -1,3 +1,4 @@
+// src/front-end/components/OrbitVerified.tsx
 import React from "react";
 import styles from "../styles/OrbitVerified.module.css";
 

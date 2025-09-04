@@ -1,5 +1,3 @@
-/* src/front-end/styles/CentralPage.module.css */
-
 /* General */
 .container {
   position: relative;
@@ -22,16 +20,18 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 85%;
-  height: 85%;
+  width: 90vw;
+  max-width: 1400px;
+  height: 90vh;
+  max-height: 900px;
   background-color: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(1.5vw);
   border-radius: 20px;
   z-index: 2;
   padding: 0;
   box-shadow: none;
-  display: flex; /* Tambahan untuk memastikan contentWrapper mengisi ruang */
-  flex-direction: column; /* Tambahan */
+  display: flex;
+  flex-direction: column;
 }
 
 .contentWrapper {
@@ -42,45 +42,44 @@
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 80px 40px 100px 40px;
+  padding: 8vh 4vw;
   box-sizing: border-box;
-  /* --- UPDATE: Memperbesar area 'blur tunnel' --- */
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent 0%,
-    black 250px 
+    black 15vh
   );
   mask-image: linear-gradient(
     to bottom,
     transparent 0%,
-    black 120px
+    black 15vh
   );
 }
 
 .brandTopLeft {
   position: absolute;
-  top: 18px;
-  left: 25px;
+  top: 2vh;
+  left: 2.5vw;
   display: flex;
   align-items: center;
   pointer-events: none;
-  z-index: 10; /* Pastikan di atas konten */
+  z-index: 10;
 }
 
 /* Content container (bottom control) */
 .contentContainer {
-  position: fixed; /* Ubah ke fixed agar tidak ikut scroll */
-  bottom: 6%;
+  position: fixed;
+  bottom: 6vh;
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
+  width: 80vw;
   max-width: 600px;
-  padding: 12px;
+  padding: 1vh 1vw;
   background-color: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(0.8vh);
+  box-shadow: 0 0.4vh 3vh rgba(0, 0, 0, 0.12);
   z-index: 5;
   display: flex;
   align-items: center;
@@ -91,9 +90,9 @@
 .buttonContainerWrapper {
   overflow: hidden;
   flex: 1;
-  cursor: grab;
+  /* 👇 Hapus properti cursor di sini */
   user-select: none;
-  padding: 12px 0;
+  padding: 1.2vh 0.5vw;
   transition: opacity 0.36s ease;
   position: relative;
   -webkit-mask-image: linear-gradient(
@@ -118,10 +117,10 @@
 
 .buttonGroup {
   display: flex;
-  gap: 12px;
+  gap: 1vw;
   flex-shrink: 0;
   will-change: transform;
-  padding: 8px 12px;
+  padding: 0.8vh 1.2vw;
   transition: transform 280ms cubic-bezier(.2,.8,.2,1);
 }
 
@@ -133,8 +132,8 @@
   color: #fff;
   text-align: center;
   border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 0.85rem;
+  padding: 0.6vh 1vw;
+  font-size: 1.2vw;
   font-weight: 600;
   pointer-events: none;
   white-space: nowrap;
@@ -154,14 +153,14 @@
 
 .tooltipArrow {
   position: absolute;
-  bottom: -6px;
+  bottom: -0.6vh;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid rgba(0, 0, 0, 0.88);
+  border-left: 0.6vh solid transparent;
+  border-right: 0.6vh solid transparent;
+  border-top: 0.6vh solid rgba(0, 0, 0, 0.88);
 }
 
 /* Nav buttons */
@@ -170,12 +169,14 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 50%;
   color: white;
-  cursor: pointer;
+  cursor: none;
   z-index: 10;
   opacity: 0.55;
   transition: opacity 0.18s ease, transform 0.12s ease;
-  width: 36px;
-  height: 36px;
+  width: 3.6vw;
+  height: 3.6vw;
+  max-width: 36px;
+  max-height: 36px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -187,26 +188,28 @@
   transform: scale(1.05);
 }
 
-.navLeft { margin-right: 12px; }
-.navRight { margin-left: 12px; }
+.navLeft { margin-right: 1.2vw; }
+.navRight { margin-left: 1.2vw; }
 
 /* Action buttons */
 .actionButton {
-  width: 56px;
-  height: 56px;
+  width: 5.6vw;
+  height: 5.6vw;
+  max-width: 56px;
+  max-height: 56px;
   flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
+  cursor: none;
   border-radius: 14px;
   border: none;
-  font-size: 1.4rem;
+  font-size: 2.2vw;
   color: white;
   background: linear-gradient(145deg, #1e90ff, #0052cc);
-  box-shadow: 
-    0 6px 12px rgba(0,0,0,0.28), 
-    inset 0 2px 6px rgba(255,255,255,0.06);
+  box-shadow:
+    0 0.6vh 1.2vh rgba(0,0,0,0.28),
+    inset 0 0.2vh 0.6vh rgba(255,255,255,0.06);
   transition: transform 160ms cubic-bezier(.2,.9,.3,1),
               box-shadow 160ms,
               background 200ms ease;
@@ -214,15 +217,15 @@
 
 .actionButton:hover {
   background: linear-gradient(145deg, #3cabff, #0061f7);
-  transform: translateY(-2px);
-  box-shadow: 
-    0 8px 15px rgba(0,0,0,0.3), 
-    inset 0 2px 4px rgba(255,255,255,0.08);
+  transform: translateY(-0.2vh);
+  box-shadow:
+    0 0.8vh 1.5vh rgba(0,0,0,0.3),
+    inset 0 0.2vh 0.4vh rgba(255,255,255,0.08);
 }
 
 .actionButton.pressed {
-  transform: translateY(1px) scale(0.98);
-  box-shadow: inset 0 4px 10px rgba(0,0,0,0.45);
+  transform: translateY(0.1vh) scale(0.98);
+  box-shadow: inset 0 0.4vh 1vh rgba(0,0,0,0.45);
   outline: 2px solid rgba(0, 191, 255, 0.8);
   outline-offset: 3px;
 }
@@ -232,14 +235,18 @@
 }
 
 .logo {
-  width: 45px;
-  height: 45px;
+  width: 4.5vh;
+  height: 4.5vh;
+  max-width: 45px;
+  max-height: 45px;
 }
 
 .whiteText {
-  width: 150px;
+  width: 15vw;
+  max-width: 150px;
   height: auto;
-  margin-left: 12px;
+  margin-left: 1.2vw;
+  animation: fadeInOut 2.5s ease-in-out infinite;
 }
 
 @keyframes fadeInOut {
@@ -249,9 +256,39 @@
 
 /* Media queries */
 @media (max-width: 768px) {
-  .contentContainer { width: 92%; bottom: 5%; }
-  .actionButton { width: 50px; height: 50px; }
-  .navButton { width: 28px; height: 28px; }
+  .contentBox {
+    width: 96vw;
+    height: 96vh;
+    padding: 0;
+  }
+  .brandTopLeft {
+    top: 1.5vh;
+    left: 2.5vw;
+  }
+  .logo {
+    width: 6vw;
+    height: 6vw;
+  }
+  .whiteText {
+    width: 25vw;
+  }
+  .contentContainer {
+    width: 92vw;
+    bottom: 4vh;
+  }
+  .actionButton {
+    width: 12vw;
+    height: 12vw;
+    font-size: 5vw;
+  }
+  .navButton {
+    width: 8vw;
+    height: 8vw;
+    font-size: 4vw;
+  }
+  .tooltipText {
+    font-size: 3vw;
+  }
 }
 
 /* Accessibility tweak */
