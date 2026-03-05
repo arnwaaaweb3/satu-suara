@@ -7,45 +7,34 @@ const InfoPageContent: React.FC = () => {
   const indicatorsContainerRef = useRef<HTMLDivElement>(null);
   const [totalIndicators, setTotalIndicators] = useState(0);
   const [visibleIndicators, setVisibleIndicators] = useState(3);
-  const [cardWidth, setCardWidth] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
 
+  // Perhitungan lebar container dan jumlah kartu yang terlihat
   useEffect(() => {
-    const calculateVisible = () => {
-      if (window.innerWidth < 768) {
-        setVisibleIndicators(1);
-      } else if (window.innerWidth < 1200) {
-        setVisibleIndicators(2);
-      } else {
-        setVisibleIndicators(3);
+    const calculateLayout = () => {
+      if (indicatorsContainerRef.current) {
+        setContainerWidth(indicatorsContainerRef.current.offsetWidth);
+        setTotalIndicators(indicatorsContainerRef.current.children.length);
+        
+        if (window.innerWidth < 768) {
+          setVisibleIndicators(1);
+        } else if (window.innerWidth < 1200) {
+          setVisibleIndicators(2);
+        } else {
+          setVisibleIndicators(3);
+        }
       }
     };
 
-    const calculateCardWidth = () => {
-      if (indicatorsContainerRef.current && indicatorsContainerRef.current.children[0]) {
-        const firstCard = indicatorsContainerRef.current.children[0] as HTMLElement;
-        const style = window.getComputedStyle(firstCard);
-        const gap = parseInt(style.marginRight || '0', 10);
-        setCardWidth(firstCard.offsetWidth + gap);
-      }
+    calculateLayout();
+
+    const handleResize = () => {
+      calculateLayout();
     };
 
-    calculateVisible();
-    calculateCardWidth();
-
-    if (indicatorsContainerRef.current) {
-      setTotalIndicators(indicatorsContainerRef.current.children.length);
-    }
-
-    window.addEventListener('resize', () => {
-      calculateVisible();
-      calculateCardWidth();
-    });
-
-    return () => window.removeEventListener('resize', () => {
-      calculateVisible();
-      calculateCardWidth();
-    });
-  }, []);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []); // Dependensi kosong agar hanya berjalan sekali
 
   const handleNextIndicator = () => {
     setIndicatorIndex((prevIndex) =>
@@ -56,26 +45,15 @@ const InfoPageContent: React.FC = () => {
   const handlePrevIndicator = () => {
     setIndicatorIndex((prevIndex) => Math.max(prevIndex - 1, 0));
   };
+  
+  // Hitung lebar setiap kartu untuk transform
+  const cardWidth = containerWidth / visibleIndicators;
 
   return (
     <div className={styles.wrapper}>
       {/* Lantai 1: Hero Section */}
       <section className={styles.section}>
         <div className={styles.heroCard}>
-          {/* Tambahan: Image baru di sini */}
-          <img 
-            src="/votegraaaah.svg" 
-            alt="Voting Graphic" 
-            className={styles.votingGraphic} 
-          />
-          <div className={styles.voteElement}>
-            <div className={styles.heroContentWrapper}>
-              <h1 className={styles.mainTitle}>SatuSuara</h1>
-              <p className={styles.description}>
-                SatuSuara adalah platform voting terdesentralisasi yang kami kembangkan untuk menciptakan sistem pemilihan yang lebih terbuka, transparan, dan bisa diverifikasi siapa pun.
-              </p>
-            </div>
-          </div>
         </div>
       </section>
 
