@@ -7,9 +7,8 @@ import LoadingScreen from "../components/LoadingScreen";
 import styles from "../styles/CentralPage.module.css";
 import { FaHome, FaInfo, FaUser, FaQuestion, FaBook, FaChevronLeft, FaChevronRight, FaPoll } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import CustomCursor from "../components/CustomCursor";
 
-// ----- Import Komponen Konten Halaman (yang akan di-render di tempat) -----
+// ----- Import Komponen Konten Halaman -----
 import InfoPageContent from "../components/InfoPageContent";
 import CreatorPageContent from "../components/CreatorPageContent";
 import FAQPageContent from "../components/FAQPageContent";
@@ -35,7 +34,6 @@ const CentralPage: React.FC = () => {
   const [hoveredButton, setHoveredButton] = useState<{ id: number; x: number; y: number; label: string } | null>(null);
   const [pressedButtonId, setPressedButtonId] = useState<number | null>(null);
   const [activePage, setActivePage] = useState<string>("/info");
-  const [cursorType, setCursorType] = useState<'default' | 'click'>('default');
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const buttonGroupRef = useRef<HTMLDivElement | null>(null);
@@ -50,7 +48,6 @@ const CentralPage: React.FC = () => {
   const startX = useRef(0);
   const lastOffsetX = useRef(0);
   const dragDeltaX = useRef(0);
-  const isClickingNav = useRef(false);
   const velocity = useRef(0);
   const lastMoveX = useRef(0);
   const lastBlurUpdateOffset = useRef<number | null>(null);
@@ -61,13 +58,13 @@ const CentralPage: React.FC = () => {
   const ActivePageComponent = useMemo(() => pageMap[activePage] || null, [activePage]);
 
   const snapToNearest = useCallback(() => {
-    if (buttonItemWidth.current <= 0 || !buttonGroupRef.current) return;
-    const containerRect = containerRef.current!.getBoundingClientRect();
+    if (buttonItemWidth.current <= 0 || !buttonGroupRef.current || !containerRef.current) return;
+    const containerRect = containerRef.current.getBoundingClientRect();
     const containerCenter = containerRect.width / 2;
     let closestIndex = 0;
     let closestDistance = Infinity;
-    const allButtons = buttonGroupRef.current?.querySelectorAll(`.${styles.actionButton}`);
-    if (!allButtons) return;
+    const allButtons = buttonGroupRef.current.querySelectorAll(`.${styles.actionButton}`);
+    
     allButtons.forEach((btn, idx) => {
       const rect = (btn as HTMLElement).getBoundingClientRect();
       const btnCenter = rect.left + rect.width / 2 - containerRect.left;
@@ -77,6 +74,7 @@ const CentralPage: React.FC = () => {
         closestIndex = idx;
       }
     });
+
     let targetOffset = containerCenter - ((allButtons[closestIndex] as HTMLElement).offsetLeft + buttonItemWidth.current / 2);
     const container = containerRef.current;
     if (container && buttonsWidth.current > 0) {
@@ -93,6 +91,7 @@ const CentralPage: React.FC = () => {
     const minOffset = container && buttonsWidth.current > 0
       ? Math.min(0, -(buttonsWidth.current - container.offsetWidth))
       : 0;
+
     if (Math.abs(velocity.current) > 0.1) {
       offsetXTarget.current += velocity.current;
       if (offsetXTarget.current > maxOffset) {
@@ -115,6 +114,7 @@ const CentralPage: React.FC = () => {
     const containerRect = containerRef.current.getBoundingClientRect();
     const centerOfContainer = containerRect.width / 2;
     const maxDistance = containerRect.width / 2;
+
     const newBlur: React.CSSProperties[] = buttonElements.map((button) => {
       const buttonRect = button.getBoundingClientRect();
       const buttonCenter = buttonRect.left + buttonRect.width / 2 - containerRect.left;
@@ -133,11 +133,7 @@ const CentralPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const assets = [ 
-      "/background.svg", 
-      "/white-logo.png", 
-      "/white-text.svg", 
-      "/blue-logo.ico" ];
+    const assets = ["/background.svg", "/white-logo.png", "/white-text.svg", "/blue-logo.ico"];
     let loadedCount = 0;
     const checkLoadingStatus = () => {
       loadedCount++;
@@ -151,7 +147,7 @@ const CentralPage: React.FC = () => {
       img.onload = checkLoadingStatus;
       img.onerror = checkLoadingStatus;
     });
-    const fallback = setTimeout(() => setIsLoading(false), 4000);
+
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
       const startFade = 100;
@@ -163,13 +159,7 @@ const CentralPage: React.FC = () => {
       }
       setButtonOpacity(newOpacity);
     };
-    window.addEventListener("scroll", handleScroll);
-    const clampOffset = (val: number) => {
-      if (!containerRef.current || buttonsWidth.current <= 0) return val;
-      const maxOffset = 0;
-      const minOffset = Math.min(0, -(buttonsWidth.current - containerRef.current.offsetWidth));
-      return Math.max(minOffset, Math.min(maxOffset, val));
-    };
+
     const calcButtonsWidth = () => {
       if (buttonGroupRef.current) {
         const allButtons = buttonGroupRef.current.querySelectorAll(`.${styles.actionButton}`);
@@ -178,13 +168,12 @@ const CentralPage: React.FC = () => {
           buttonsWidth.current = allButtons.length * buttonItemWidth.current + (allButtons.length - 1) * gapWidth;
         }
       }
-      offsetXTarget.current = clampOffset(offsetXTarget.current);
-      offsetXCurrent.current = clampOffset(offsetXCurrent.current);
     };
+
     calcButtonsWidth();
+    window.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", calcButtonsWidth);
     return () => {
-      clearTimeout(fallback);
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", calcButtonsWidth);
     };
@@ -193,6 +182,7 @@ const CentralPage: React.FC = () => {
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+
     const onPointerDown = (e: PointerEvent) => {
       isDragging.current = false; 
       dragDeltaX.current = 0; 
@@ -204,6 +194,7 @@ const CentralPage: React.FC = () => {
       container.style.cursor = "grabbing";
       container.style.userSelect = "none";
     };
+
     const onPointerMove = (e: PointerEvent) => {
       if (!(container as HTMLElement).hasPointerCapture(e.pointerId)) return;
       const deltaX = e.pageX - startX.current;
@@ -212,9 +203,11 @@ const CentralPage: React.FC = () => {
         isDragging.current = true;
       }
       if (!isDragging.current) return;
+
       let newOffset = lastOffsetX.current + deltaX;
       velocity.current = e.pageX - lastMoveX.current;
       lastMoveX.current = e.pageX;
+
       if (buttonsWidth.current > 0) {
         const maxOffset = 0;
         const minOffset = Math.min(0, -(buttonsWidth.current - container.offsetWidth));
@@ -222,6 +215,7 @@ const CentralPage: React.FC = () => {
       }
       offsetXTarget.current = newOffset;
     };
+
     const onPointerUp = (e: PointerEvent) => {
       try { (container as HTMLElement).releasePointerCapture(e.pointerId); } catch (err) {}
       container.style.cursor = "grab";
@@ -231,9 +225,9 @@ const CentralPage: React.FC = () => {
       }
       setTimeout(() => {
         isDragging.current = false;
-        isClickingNav.current = false;
       }, 50);
     };
+
     container.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
@@ -248,7 +242,6 @@ const CentralPage: React.FC = () => {
 
   const onHoldStart = (direction: 'prev' | 'next') => {
     if (scrollIntervalRef.current) return;
-    isClickingNav.current = true;
     const scrollStep = direction === 'prev' ? 10 : -10; 
     scrollIntervalRef.current = setInterval(() => {
       const container = containerRef.current;
@@ -257,11 +250,10 @@ const CentralPage: React.FC = () => {
         const minOffset = Math.min(0, -(buttonsWidth.current - container.offsetWidth));
         const next = offsetXTarget.current + scrollStep;
         offsetXTarget.current = Math.max(minOffset, Math.min(maxOffset, next));
-      } else {
-        offsetXTarget.current += scrollStep;
       }
     }, 20); 
   };
+
   const onHoldEnd = () => {
     if (scrollIntervalRef.current) {
       clearInterval(scrollIntervalRef.current);
@@ -271,28 +263,18 @@ const CentralPage: React.FC = () => {
   };
   
   const onClickNav = (direction: 'prev' | 'next') => {
-    isClickingNav.current = true;
     const container = containerRef.current;
     if (!container) return;
     
-    const buttonItemPercentage = 0.1;
-    const gapPercentage = 0.01;      
-    
-    const containerWidth = container.offsetWidth;
-    const buttonWidth = containerWidth * buttonItemPercentage;
-    const gap = containerWidth * gapPercentage;
-    
-    const scrollStep = direction === 'prev' ? (buttonWidth + gap) : -(buttonWidth + gap);
-    
+    const scrollStep = direction === 'prev' ? 120 : -120;
     const maxOffset = 0;
     const minOffset = Math.min(0, -(buttonsWidth.current - container.offsetWidth));
     const next = offsetXTarget.current + scrollStep;
     offsetXTarget.current = Math.max(minOffset, Math.min(maxOffset, next));
+    snapToNearest();
   };
   
-  // 👇 Gabungkan logika kursor dan tooltip di satu fungsi
   const handleButtonMouseEnter = (e: React.MouseEvent, button: typeof actionButtonsData[0]) => {
-    setCursorType('click');
     const buttonRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     setHoveredButton({
       id: button.id,
@@ -302,9 +284,7 @@ const CentralPage: React.FC = () => {
     });
   };
 
-  // 👇 Gabungkan logika kursor dan tooltip di satu fungsi
   const handleButtonMouseLeave = () => {
-    setCursorType('default');
     setHoveredButton(null);
   };
   
@@ -318,9 +298,7 @@ const CentralPage: React.FC = () => {
   };
   
   const handleButtonClick = (path: string) => {
-    if (isDragging.current || Math.abs(dragDeltaX.current) > 5) {
-      return;
-    }
+    if (isDragging.current || Math.abs(dragDeltaX.current) > 5) return;
     if (path in pageMap) {
       setActivePage(path);
     } else {
@@ -335,7 +313,7 @@ const CentralPage: React.FC = () => {
       offsetXCurrent.current = lerp(offsetXCurrent.current, offsetXTarget.current, 0.12);
       if (buttonGroupRef.current) {
         buttonGroupRef.current.style.transform = `translateX(${offsetXCurrent.current}px)`;
-        if (lastBlurUpdateOffset.current === null || Math.abs((lastBlurUpdateOffset.current ?? 0) - offsetXCurrent.current) > 0.6) {
+        if (lastBlurUpdateOffset.current === null || Math.abs(lastBlurUpdateOffset.current - offsetXCurrent.current) > 0.6) {
           computeBlurStyles();
           lastBlurUpdateOffset.current = offsetXCurrent.current;
         }
@@ -346,39 +324,13 @@ const CentralPage: React.FC = () => {
     return () => cancelAnimationFrame(animationFrameId);
   }, [computeBlurStyles]);
 
-  const getBlurStyleForIndex = (idx: number) => blurStyles.current[idx] || {};
-
   return (
     <>
-      <CustomCursor cursorType={cursorType} />
       {isLoading && <LoadingScreen />}
       {!isLoading && (
-        <div
-          className={styles.container}
-          style={{
-            backgroundImage: "url('/background.svg')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            position: "relative",
-            minHeight: "100vh",
-            overflow: "hidden",
-          }}
-        >
+        <div className={styles.container} style={{ backgroundImage: "url('/background.svg')" }}>
           <div className={styles.wavesWrapper} aria-hidden="true">
-            <Waves
-              lineColor="#456882"
-              backgroundColor="rgba(27, 60, 83, 0.6)"
-              waveSpeedX={0.02}
-              waveSpeedY={0.01}
-              waveAmpX={40}
-              waveAmpY={20}
-              friction={0.9}
-              tension={0.01}
-              maxCursorMove={120}
-              xGap={12}
-              yGap={36}
-            />
+            <Waves lineColor="#456882" backgroundColor="rgba(27, 60, 83, 0.6)" waveSpeedX={0.02} waveSpeedY={0.01} waveAmpX={40} waveAmpY={20} friction={0.9} tension={0.01} maxCursorMove={120} xGap={12} yGap={36} />
           </div>
 
           <div className={styles.contentBox}>
@@ -392,33 +344,20 @@ const CentralPage: React.FC = () => {
           </div>
           
           <div className={styles.contentContainer}>
-            <button
-              className={`${styles.navButton} ${styles.navLeft}`}
-              onClick={() => onClickNav('prev')}
-              onPointerDown={() => onHoldStart('prev')}
-              onPointerUp={onHoldEnd} onPointerLeave={onHoldEnd}
-              onMouseEnter={() => setCursorType('click')}
-              onMouseLeave={() => setCursorType('default')}
-              aria-label="Previous"
-            ><FaChevronLeft size={24} /></button>
+            <button className={`${styles.navButton} ${styles.navLeft}`} onClick={() => onClickNav('prev')} onPointerDown={() => onHoldStart('prev')} onPointerUp={onHoldEnd} onPointerLeave={onHoldEnd} aria-label="Previous">
+              <FaChevronLeft size={24} />
+            </button>
 
-            <div
-              className={styles.buttonContainerWrapper}
-              ref={containerRef}
-              style={{ opacity: buttonOpacity }}
-            >
+            <div className={styles.buttonContainerWrapper} ref={containerRef} style={{ opacity: buttonOpacity }}>
               <div className={styles.buttonGroup} ref={buttonGroupRef}>
                 {actionButtonsData.map((button, index) => {
                   const IconComponent = button.icon;
-                  const buttonClassName = `${styles.actionButton} ${pressedButtonId === button.id ? styles.pressed : ''}`;
-                  
                   return (
                     <button
                       key={`${button.id}_${index}`}
-                      className={buttonClassName}
+                      className={`${styles.actionButton} ${pressedButtonId === button.id ? styles.pressed : ''}`}
                       aria-label={button.label}
-                      style={getBlurStyleForIndex(index)}
-                      // 👇 Menggunakan fungsi yang sudah digabungkan
+                      style={blurStyles.current[index] || {}}
                       onMouseEnter={(e) => handleButtonMouseEnter(e, button)}
                       onMouseLeave={handleButtonMouseLeave}
                       onPointerDown={() => handleButtonPointerDown(button.id)}
@@ -433,26 +372,13 @@ const CentralPage: React.FC = () => {
               </div>
             </div>
 
-            <button
-              className={`${styles.navButton} ${styles.navRight}`}
-              onClick={() => onClickNav('next')}
-              onPointerDown={() => onHoldStart('next')}
-              onPointerUp={onHoldEnd} onPointerLeave={onHoldEnd}
-              onMouseEnter={() => setCursorType('click')}
-              onMouseLeave={() => setCursorType('default')}
-              aria-label="Next"
-            ><FaChevronRight size={24} /></button>
+            <button className={`${styles.navButton} ${styles.navRight}`} onClick={() => onClickNav('next')} onPointerDown={() => onHoldStart('next')} onPointerUp={onHoldEnd} onPointerLeave={onHoldEnd} aria-label="Next">
+              <FaChevronRight size={24} />
+            </button>
           </div>
 
           {hoveredButton && (
-            <div
-              className={styles.tooltipText}
-              style={{
-                left: hoveredButton.x,
-                top: hoveredButton.y,
-                transform: `translateX(-50%) translateY(-110%)`,
-              }}
-            >
+            <div className={styles.tooltipText} style={{ left: hoveredButton.x, top: hoveredButton.y, transform: `translateX(-50%) translateY(-110%)` }}>
               <span className={styles.tooltipInner}>{hoveredButton.label}</span>
               <div className={styles.tooltipArrow} />
             </div>

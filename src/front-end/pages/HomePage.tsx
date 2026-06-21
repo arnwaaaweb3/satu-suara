@@ -8,11 +8,9 @@ import HamburgerMenu from '../components/HamburgerMenu';
 import styles from '../styles/HomePage.module.css';
 import LoadingScreen from '../components/LoadingScreen';
 import OrbitVerified from "../components/OrbitVerified";
-import CustomCursor from "../components/CustomCursor";
 
 const HomePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [cursorType, setCursorType] = useState<'default' | 'click'>('default');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,7 +45,6 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      <CustomCursor cursorType={cursorType} />
       {isLoading && <LoadingScreen />}
       {!isLoading && (
         <div
@@ -82,7 +79,6 @@ const HomePage: React.FC = () => {
             />
           </div>
 
-          {/* 👇 PENTING: Tambahkan wrapper ini untuk layout yang responsif */}
           <div className={styles.contentWrapper}>
             {/* Logo + Text */}
             <div className={styles.logoWrapper}>
@@ -94,11 +90,8 @@ const HomePage: React.FC = () => {
               </FadeContent>
             </div>
 
-            {/* Hamburger Menu */}
-            <HamburgerMenu
-              onMouseEnter={() => setCursorType('click')}
-              onMouseLeave={() => setCursorType('default')}
-            />
+            {/* Hamburger Menu - No more custom cursor logic here */}
+            <HamburgerMenu />
 
             {/* Heading */}
             <div
@@ -108,20 +101,18 @@ const HomePage: React.FC = () => {
               onContextMenu={(e: MouseEvent<HTMLDivElement>) => e.preventDefault()}
             >
               <BlurText
-                text="Sistem Demokrasi Digital — Voting Transparan, Aman, dan Berbasis Blockchain."
+                text="Sistem Demokrasi Digital.  Voting Transparan, Aman, dan Berbasis Blockchain."
                 delay={100}
                 animateBy="words"
                 direction="top"
                 onAnimationComplete={handleAnimationComplete}
               />
 
-              {/* CTA Button with Fade Animation */}
+              {/* CTA Button */}
               <FadeContent slideY={20}>
                 <button
                   className={styles.ctaButton}
                   onClick={handleGetStartedClick}
-                  onMouseEnter={() => setCursorType('click')}
-                  onMouseLeave={() => setCursorType('default')}
                 >
                   Get Started
                 </button>

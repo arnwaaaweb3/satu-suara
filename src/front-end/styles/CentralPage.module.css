@@ -169,7 +169,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 50%;
   color: white;
-  cursor: none;
+  cursor: pointer;
   z-index: 10;
   opacity: 0.55;
   transition: opacity 0.18s ease, transform 0.12s ease;
@@ -201,7 +201,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: none;
+  cursor: pointer;
   border-radius: 14px;
   border: none;
   font-size: 2.2vw;

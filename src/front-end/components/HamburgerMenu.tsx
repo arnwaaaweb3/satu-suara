@@ -1,12 +1,9 @@
+// src/front-end/components/HamburgerMenu.tsx
 import React, { useState, useEffect } from "react";
 import styles from "../styles/HamburgerMenu.module.css";
 
-interface HamburgerMenuProps {
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
-}
-
-const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onMouseEnter, onMouseLeave }) => {
+// 👇 SAGE TOUCH: Kita hapus interface Props karena sudah tidak butuh event cursor
+const HamburgerMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
@@ -44,8 +41,6 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onMouseEnter, onMouseLeav
         className={styles.hamburgerButton}
         onClick={toggleMenu}
         aria-label="Toggle menu"
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
       >
         <div className={`${styles.line} ${isOpen ? styles.line1Open : ""}`} />
         <div className={`${styles.line} ${isOpen ? styles.line2Open : ""}`} />
@@ -53,7 +48,6 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onMouseEnter, onMouseLeav
       </button>
 
       {/* Overlay */}
-      {/* 👇 PENTING: Hapus onMouseEnter dan onMouseLeave dari sini */}
       {(isOpen || isClosing) && (
         <div 
           className={`${styles.overlay} ${isClosing ? styles.fadeOutOverlay : ""}`} 
@@ -64,13 +58,10 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onMouseEnter, onMouseLeav
       {/* Dropdown Menu */}
       {isOpen && (
         <div className={styles.dropdownMenu}>
-          {/* 👇 Pertahankan event handler di setiap link */}
           <a
             href="#home"
             className={styles.menuItem}
             onClick={closeMenu}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
           >
             Beranda
           </a>
@@ -78,8 +69,6 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onMouseEnter, onMouseLeav
             href="#about"
             className={styles.menuItem}
             onClick={closeMenu}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
           >
             Tentang Kami
           </a>
@@ -87,8 +76,6 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onMouseEnter, onMouseLeav
             href="#services"
             className={styles.menuItem}
             onClick={closeMenu}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
           >
             Layanan
           </a>
@@ -96,8 +83,6 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onMouseEnter, onMouseLeav
             href="#contact"
             className={styles.menuItem}
             onClick={closeMenu}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
           >
             Hubungi Kami
           </a>
